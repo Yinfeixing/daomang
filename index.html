@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>从看见到改变</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background: #000; color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+            -webkit-tap-highlight-color: transparent; user-select: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ================= 核心：点击翻页与遮罩揭示动画 ================= */
+        .page-container {
+            position: relative;
+            width: 100%; height: 100%;
+            overflow: hidden;
+        }
+
+        .page-section {
+            position: absolute;
+            inset: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            /* 默认被裁剪（从右侧隐藏），且不可见 */
+            clip-path: inset(0 0 0 100%);
+            visibility: hidden;
+            z-index: 1;
+        }
+
+        .page-section.active {
+            visibility: visible;
+            z-index: 10;
+            clip-path: inset(0 0 0 0);
+        }
+
+        .page-section.reveal {
+            animation: revealClip 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes revealClip {
+            0% { clip-path: inset(0 0 0 100%); }
+            100% { clip-path: inset(0 0 0 0); }
+        }
+
+        /* ================= 内部动画 ================= */
+        .fade-up {
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        .page-section.active .fade-up {
+            opacity: 1; transform: translateY(0);
+        }
+        .delay-1 { transition-delay: 0.2s; }
+        .delay-2 { transition-delay: 0.4s; }
+        .delay-3 { transition-delay: 0.6s; }
+
+        /* ================= 右下角“下一页”悬浮提示框 ================= */
+        .next-page-btn {
+            position: fixed;
+            right: 40px;
+            bottom: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            animation: floatUpDown 2s infinite ease-in-out;
+            opacity: 0; /* 默认隐藏 */
+            pointer-events: none;
+        }
+        .next-page-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* 针对白底页面的特殊样式 */
+        .next-page-btn.dark-theme {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.2);
+            color: #333;
+        }
+        .next-page-btn.dark-theme:hover {
+            background: rgba(0, 0, 0, 0.1);
+            border-color: #333;
+        }
+
+        /* 显示状态 */
+        .next-page-btn.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        @keyframes floatUpDown {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        /* =================================================================
+           页面一：开屏
+           ================================================================= */
+        #page-intro { display: flex; justify-content: center; align-items: center; background: #000; cursor: pointer; }
+        .scene { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
+
+        .light-beam {
+            position: absolute; top: -10%; left: 50%; transform: translateX(-50%);
+            width: 100vw; height: 120vh; clip-path: polygon(46% 0, 54% 0, 75% 100%, 25% 100%);
+            background: radial-gradient(ellipse 40% 60% at 50% 0%, rgba(255,255,255,1) 0%, rgba(255,255,255,0.7) 40%, transparent 80%), linear-gradient(to bottom, rgba(255,255,255,0.3) 0%, transparent 90%);
+            z-index: 1; transition: clip-path 0.9s cubic-bezier(0.4,0,0.2,1); pointer-events: none;
+        }
+        .scene.is-active .light-beam { clip-path: polygon(10% 0, 90% 0, 150% 100%, -50% 100%); }
+
+        .tactile-paving {
+            position: absolute; bottom: 0; width: 100vw; height: 30vh; z-index: 1; opacity: 0; transition: opacity 0.9s ease-in-out;
+            background-image: radial-gradient(circle at 15px 15px, rgba(255,255,255,0.3) 3px, transparent 4px), linear-gradient(rgba(255,255,255,0.05) 2px, transparent 2px);
+            background-size: 30px 30px, 100% 40px; transform: perspective(600px) rotateX(70deg); transform-origin: bottom center;
+        }
+        .scene.is-active .tactile-paving { opacity: 1; }
+
+        .silhouette-container { position: absolute; bottom: 18%; z-index: 2; display: flex; justify-content: center; align-items: flex-end; filter: brightness(0) drop-shadow(0 0 15px rgba(255,255,255,0.5)); }
+        .person-img { height: 25vh; max-width: 80vw; object-fit: contain; }
+
+        .breathing-ring { position: absolute; width: 60px; height: 60px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; z-index: 3; opacity: 0; animation: breath 2.5s infinite ease-in-out; pointer-events: none; }
+        @keyframes breath { 0% { transform: scale(0.8); opacity: 0.1; } 50% { transform: scale(1.6); opacity: 1; box-shadow: 0 0 30px rgba(255,255,255,0.5); } 100% { transform: scale(0.8); opacity: 0.1; } }
+
+        .title { 
+            position: absolute; color: #fff; top: 25%; width: 100%; white-space: nowrap; text-align: center; 
+            font-family: 'ZCOOL KuaiLe', sans-serif; 
+            font-size: clamp(2.5rem, 6vw, 6.5rem); letter-spacing: 0.05em; z-index: 3; transform: translateY(30px); opacity: 0; 
+            text-shadow: 2px 4px 10px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.4); transition: opacity 1s ease, transform 1s ease; pointer-events: none; 
+        }
+        .scene.is-active .title { opacity: 1; transform: translateY(0); }
+
+        /* =================================================================
+           页面二：产品轮播
+           ================================================================= */
+        #page-products { background: #000; touch-action: none; }
+        .products-header { position: absolute; top: 0; left: 0; right: 0; padding: 35px 24px 50px; text-align: center; z-index: 100; background: linear-gradient(to bottom, rgba(0,0,0,.8), transparent); pointer-events: none; }
+        .products-header h1 { font-family: 'ZCOOL KuaiLe', sans-serif; font-size: 2.2rem; font-weight: 700; letter-spacing: .15em; text-shadow: 0 4px 20px rgba(0,0,0,.9); }
+
+        .card-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; touch-action: none; z-index: 10; }
+        .card-item { position: absolute; width: 100vw; height: 100vh; border-radius: 0; overflow: hidden; background: #111; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease; will-change: transform, opacity; transform-origin: center center; }
+        .card-item .img-wrap { position: absolute; inset: 0; background-size: cover; background-position: center; }
+        .card-item .img-wrap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.95) 0%, rgba(0,0,0,.4) 40%, rgba(0,0,0,.2) 80%, rgba(0,0,0,.6) 100%); }
+        .card-item .info { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px 30px 180px; z-index: 2; pointer-events: none; }
+        .card-item .btn { pointer-events: auto; display: inline-block; padding: 14px 32px; border: 1px solid rgba(255,255,255,.5); background: rgba(255,255,255,.15); backdrop-filter: blur(8px); color: #fff; font-size: 1rem; font-weight: 600; letter-spacing: .08em; border-radius: 30px; cursor: pointer; transition: background .2s; }
+        .card-item .btn:active { background: rgba(255,255,255,.3); }
+        .card-item .tag { font-size: .9rem; letter-spacing: .25em; color: #30d158; font-weight: 700; margin-bottom: 12px; }
+        .card-item .name { font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin-bottom: 16px; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+        .card-item .desc { font-size: 1.1rem; line-height: 1.6; color: rgba(255,255,255,.85); margin-bottom: 24px; max-width: 90%; }
+
+        .swipe-hint { position: absolute; bottom: 190px; left: 50%; transform: translateX(-50%); color: #fff; font-size: .9rem; font-weight: 600; letter-spacing: .1em; z-index: 999; display: flex; align-items: center; gap: 8px; background: rgba(48, 209, 88, 0.25); border: 1px solid #30d158; padding: 10px 24px; border-radius: 30px; backdrop-filter: blur(10px); transition: opacity 0.6s ease, transform 0.6s ease; box-shadow: 0 0 20px rgba(48, 209, 88, 0.3); pointer-events: none; animation: swipeAnim 1.5s infinite ease-in-out; }
+        .swipe-hint.hidden { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        @keyframes swipeAnim { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-8px); } }
+
+        .indicator { position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 50; padding: 8px 16px; background: rgba(0,0,0,.5); border-radius: 20px; backdrop-filter: blur(8px); pointer-events: none;}
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.3); transition: background .3s, width .3s; }
+        .dot.active { background: #30d158; width: 18px; border-radius: 3px; }
+
+        .fixed-caption { position: absolute; bottom: 25px; left: 20px; right: 20px; text-align: center; font-size: 1.1rem; letter-spacing: .08em; line-height: 1.6; color: rgba(255,255,255,.9); z-index: 30; pointer-events: none; text-shadow: 0 4px 12px rgba(0,0,0,.9); font-weight: 500; }
+
+        .toast { position: absolute; bottom: 220px; left: 50%; transform: translateX(-50%) translateY(12px); background: rgba(20,20,20,.96); border: 1px solid rgba(48,209,88,.5); color: #30d158; font-size: .95rem; font-weight: 600; padding: 14px 28px; border-radius: 24px; opacity: 0; pointer-events: none; transition: all .3s; z-index: 1000; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* =================================================================
+           页面三 & 四：共享样式
+           ================================================================= */
+        #page-law, #page-small { background-color: #fafafa; color: #1a1a1a; overflow: hidden; display: flex; flex-direction: column; }
+        .light-header { padding: 50px 8% 20px; max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10; width: 100%; }
+        .light-header h1 { font-family: 'ZCOOL KuaiLe', sans-serif; white-space: nowrap; font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 300; letter-spacing: -0.02em; color: #111; }
+        .light-header h1 strong { font-weight: 700; }
+        .light-header .subtitle { white-space: nowrap; font-size: clamp(0.9rem, 2vw, 1.15rem); color: #666; text-align: center; margin-top: 16px; letter-spacing: 0.05em; }
+
+        .hanging-system { position: relative; width: 100%; height: calc(100vh - 200px); top: 60px; }
+        .rope-svg { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 1100px; height: 120px; pointer-events: none; z-index: 1; overflow: visible; }
+        .cards-container-flip, .small-cards-container { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 1100px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 2; }
+        .card-unit, .small-card-unit { position: relative; width: 280px; transform-origin: top center; will-change: transform; }
+        .small-card-unit { width: 300px; }
+        
+        .card-unit.item-1, .small-card-unit.item-1 { margin-top: -2px; animation: swingLeft 4s ease-in-out infinite alternate; }
+        .card-unit.item-2, .small-card-unit.item-2 { margin-top: 30px; animation: swingMid 4.5s ease-in-out infinite alternate; }
+        .card-unit.item-3, .small-card-unit.item-3 { margin-top: -2px; animation: swingRight 3.8s ease-in-out infinite alternate; }
+        
+        @keyframes swingLeft { 0% { transform: rotate(-8deg); } 100% { transform: rotate(-3deg); } }
+        @keyframes swingMid { 0% { transform: rotate(-3deg); } 100% { transform: rotate(3deg); } }
+        @keyframes swingRight { 0% { transform: rotate(3deg); } 100% { transform: rotate(8deg); } }
+        .card-unit:hover, .small-card-unit:hover { animation-play-state: paused; z-index: 50; }
+
+        .clip, .small-clip { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); width: 14px; height: 30px; background: linear-gradient(180deg, #333, #111); border-radius: 3px; z-index: 5; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        .clip::before, .small-clip::before { content: ''; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 10px; height: 16px; border: 2px solid #888; border-radius: 5px; background: #fafafa; z-index: -1; }
+
+        .card-inner-flip, .small-card-inner { position: relative; width: 100%; height: 400px; transition: transform 0.7s cubic-bezier(0.3, 0, 0.2, 1); transform-style: preserve-3d; border-radius: 8px; background: #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eaeaea; }
+        .small-card-inner { height: 420px; }
+        
+        .card-unit:hover .card-inner-flip, .small-card-unit:hover .small-card-inner { transform: rotateY(180deg); }
+        
+        .card-face, .small-card-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 8px; overflow: hidden; background: #fff; }
+        .card-front, .card-back, .small-card-front, .small-card-back { height: 100%; }
+        .card-front img, .card-back img, .small-card-front img, .small-card-back img { width: 100%; height: 100%; object-fit: cover; }
+        .card-back, .small-card-back { transform: rotateY(180deg); }
+
+        /* 呼吸光圈提示 */
+        .hint-container { position: absolute; right: 50px; bottom: 130px; display: flex; align-items: center; gap: 16px; z-index: 100; pointer-events: none; opacity: 0; transition: opacity 0.8s ease; }
+        .page-section.active .hint-container { opacity: 1; }
+        
+        .hint-text { font-size: 1.1rem; font-weight: 500; color: #555; letter-spacing: 1px; }
+        .breathing-ring-hint { position: relative; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; }
+        .breathing-ring-hint::before { content: ''; position: absolute; width: 100%; height: 100%; border: 2px solid #30d158; border-radius: 50%; animation: breatheOuter 2s infinite ease-out; }
+        .breathing-ring-hint::after { content: ''; width: 8px; height: 8px; background: #30d158; border-radius: 50%; animation: breatheInner 2s infinite ease-in-out; }
+        @keyframes breatheOuter { 0% { transform: scale(0.6); opacity: 1; box-shadow: 0 0 10px rgba(48, 209, 88, 0.4); } 100% { transform: scale(1.6); opacity: 0; box-shadow: 0 0 30px rgba(48, 209, 88, 0); } }
+        @keyframes breatheInner { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.5); opacity: 1; } }
+
+        /* ================= 移动端适配 ================= */
+        @media (max-width: 768px) {
+            .light-header h1 { white-space: normal; font-size: 2.2rem; text-align: center; }
+            .light-header .subtitle { white-space: normal; font-size: 0.95rem; }
+
+            .hanging-system { height: auto; top: 0; padding-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 40px; margin-bottom: 80px; }
+            .rope-svg, .clip, .small-clip { display: none; }
+            
+            .cards-container-flip, .small-cards-container { position: relative; flex-direction: column; align-items: center; width: 100%; left: 0; transform: none; top: 0; }
+            .card-unit, .small-card-unit { margin-top: 0 !important; width: 88vw; max-width: 320px; animation: none; margin-bottom: 20px; }
+            .card-inner-flip, .small-card-inner { height: 380px; }
+
+            .hint-container { right: 20px; bottom: 120px; }
+            .hint-text { font-size: 0.95rem; }
+            .next-page-btn { right: 20px; bottom: 30px; padding: 10px 18px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-container" id="pageContainer">
+
+        <!-- 1. 开屏 -->
+        <section class="page-section active" id="page-intro">
+            <div class="scene" id="scene">
+                <div class="light-beam"></div>
+                <div class="tactile-paving"></div>
+                <div class="silhouette-container">
+                    <img src="silhouette.png" class="person-img" alt="持杖人物">
+                </div>
+                <div class="breathing-ring" id="breathingRing"></div>
+                <h1 class="title">从看见到改变</h1>
+            </div>
+        </section>
+
+        <!-- 2. 产品轮播 -->
+        <section class="page-section" id="page-products">
+            <header class="products-header">
+                <h1 class="fade-up">科技代替眼睛看世界</h1>
+            </header>
+
+            <div class="card-stage" id="cardStage">
+                <div class="card-item" data-index="0">
+                    <div class="img-wrap" style="background-image: url('tech1.jpg');"></div>
+                    <div class="info fade-up delay-1">
+                        <span class="tag">AI VISION</span>
+                        <h2 class="name">AI 视觉描述</h2>
+                        <p class="desc">取景框实时识物，精准感知台阶与共享单车，把眼前的环境读给你听。</p>
+                        <button class="btn" data-feedback="前方 3 米有台阶，右侧有共享单车">识别画面</button>
+                    </div>
+                </div>
+                <div class="card-item" data-index="1">
+                    <div class="img-wrap" style="background-image: url('tech2.jpg');"></div>
+                    <div class="info fade-up delay-1">
+                        <span class="tag">TEXT READER</span>
+                        <h2 class="name">智能视障阅读器</h2>
+                        <p class="desc">扫过纸面，文字即刻化为流利语音，让阅读不再有门槛。</p>
+                        <button class="btn" data-feedback="🔊 正在朗读当前段落……">试听朗读</button>
+                    </div>
+                </div>
+                <div class="card-item" data-index="2">
+                    <div class="img-wrap" style="background-image: url('tech3.jpg');"></div>
+                    <div class="info fade-up delay-1">
+                        <span class="tag">SMART CANE</span>
+                        <h2 class="name">智能盲杖</h2>
+                        <p class="desc">地面激光探测结合触觉反馈，为每一步护航，提前感知前方障碍。</p>
+                        <button class="btn" data-feedback="⚠️ 前方 2.4 米处存在台阶障碍">启动探测</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="swipe-hint fade-up delay-2" id="swipeHint">
+                <span>👈 左右滑动切换产品 👉</span>
+            </div>
+
+            <div class="indicator fade-up delay-3" id="indicator">
+                <div class="dot active" data-index="0"></div>
+                <div class="dot" data-index="1"></div>
+                <div class="dot" data-index="2"></div>
+            </div>
+
+            <div class="fixed-caption fade-up delay-3">
+                科技不是让他们「看见」，<br>是让世界多一种被读出来的方式。
+            </div>
+
+            <div class="toast" id="toast"></div>
+        </section>
+
+        <!-- 3. 法规翻面卡 -->
+        <section class="page-section" id="page-law">
+            <header class="light-header">
+                <h1 class="fade-up"><strong>从一个人</strong>到一条法规</h1>
+                <div class="subtitle fade-up delay-1">制度的推进，正在填补他们生活中的裂缝。</div>
+            </header>
+
+            <div class="hanging-system">
+                <svg class="rope-svg" preserveAspectRatio="none" viewBox="0 0 1100 120">
+                    <path d="M 0 0 Q 550 240 1100 0" fill="none" stroke="#c0c0c0" stroke-width="2.5" />
+                </svg>
+
+                <div class="cards-container-flip">
+                    <div class="card-unit item-1 fade-up delay-1">
+                        <div class="clip"></div>
+                        <div class="card-inner-flip">
+                            <div class="card-face card-front"><img src="law-front1.jpg" alt="导盲犬困境"></div>
+                            <div class="card-face card-back"><img src="law-back1.jpg" alt="导盲犬改变"></div>
+                        </div>
+                    </div>
+                    <div class="card-unit item-2 fade-up delay-2">
+                        <div class="clip"></div>
+                        <div class="card-inner-flip">
+                            <div class="card-face card-front"><img src="law-front2.jpg" alt="盲文困境"></div>
+                            <div class="card-face card-back"><img src="law-back2.jpg" alt="盲文改变"></div>
+                        </div>
+                    </div>
+                    <div class="card-unit item-3 fade-up delay-3">
+                        <div class="clip"></div>
+                        <div class="card-inner-flip">
+                            <div class="card-face card-front"><img src="law-front3.jpg" alt="出行困境"></div>
+                            <div class="card-face card-back"><img src="law-back3.jpg" alt="辅具改变"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hint-container">
+                <span class="hint-text">悬停查看政策</span>
+                <div class="breathing-ring-hint"></div>
+            </div>
+        </section>
+
+        <!-- 4. 三件不费力的小事 -->
+        <section class="page-section" id="page-small">
+            <header class="light-header">
+                <h1 class="fade-up"><strong>三件</strong>不费力的小事</h1>
+                <div class="subtitle fade-up delay-1">一些微小的改变，能让他们在这个世界走得更容易些。</div>
+            </header>
+
+            <div class="hanging-system">
+                <svg class="rope-svg" preserveAspectRatio="none" viewBox="0 0 1100 120">
+                    <path d="M 0 0 Q 550 240 1100 0" fill="none" stroke="#c0c0c0" stroke-width="2.5" />
+                </svg>
+
+                <div class="small-cards-container">
+                    <div class="small-card-unit item-1 fade-up delay-1">
+                        <div class="small-clip"></div>
+                        <div class="small-card-inner">
+                            <div class="small-card-face small-card-front"><img src="small-front1.jpg" alt="盲道被占"></div>
+                            <div class="small-card-face small-card-back"><img src="small-back1.jpg" alt="盲道科普"></div>
+                        </div>
+                    </div>
+                    <div class="small-card-unit item-2 fade-up delay-2">
+                        <div class="small-clip"></div>
+                        <div class="small-card-inner">
+                            <div class="small-card-face small-card-front"><img src="small-front2.jpg" alt="遇到导盲犬"></div>
+                            <div class="small-card-face small-card-back"><img src="small-back2.jpg" alt="四不问一问"></div>
+                        </div>
+                    </div>
+                    <div class="small-card-unit item-3 fade-up delay-3">
+                        <div class="small-clip"></div>
+                        <div class="small-card-inner">
+                            <div class="small-card-face small-card-front"><img src="small-front3.jpg" alt="协助出行"></div>
+                            <div class="small-card-face small-card-back"><img src="small-back3.jpg" alt="导盲随行法"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hint-container">
+                <span class="hint-text">悬停查看科普</span>
+                <div class="breathing-ring-hint"></div>
+            </div>
+        </section>
+
+        <!-- 悬浮下一页按钮 -->
+        <div class="next-page-btn" id="nextPageBtn">
+            <span>点击进入下一页</span>
+            <span>➔</span>
+        </div>
+
+    </div>
+
+    <script>
+        const pages = Array.from(document.querySelectorAll('.page-section'));
+        const pageIntro = document.getElementById('page-intro');
+        const scene = document.getElementById('scene');
+        const breathingRing = document.getElementById('breathingRing');
+        const nextPageBtn = document.getElementById('nextPageBtn');
+        
+        let currentPageIndex = 0;
+        let isAnimating = false;
+        let introState = 0; // 0: 未点击展开光束, 1: 已展开光束
+
+        // 呼吸光圈初始化（仅针对开屏）
+        setTimeout(() => { if (introState === 0) breathingRing.style.opacity = '1'; }, 800);
+
+        /* =========================================================
+           开屏页点击展开逻辑
+           ========================================================= */
+        pageIntro.addEventListener('click', () => {
+            if (introState === 0) {
+                introState = 1;
+                breathingRing.style.opacity = '0';
+                breathingRing.style.animation = 'none';
+                scene.classList.add('is-active');
+                
+                // 展开光束后，显示下一页按钮
+                setTimeout(() => {
+                    nextPageBtn.classList.add('show');
+                }, 1000);
+            }
+        });
+
+        /* =========================================================
+           下一页按钮点击翻页逻辑
+           ========================================================= */
+        nextPageBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // 防止冒泡触发其他点击事件
+            if (isAnimating) return;
+            if (currentPageIndex < pages.length - 1) {
+                goToNextPage();
+            }
+        });
+
+        function goToNextPage() {
+            isAnimating = true;
+            nextPageBtn.classList.remove('show'); // 动画期间隐藏按钮
+
+            const nextIndex = currentPageIndex + 1;
+            const oldPage = pages[currentPageIndex];
+            oldPage.classList.remove('active');
+            
+            const newPage = pages[nextIndex];
+            newPage.style.clipPath = 'inset(0 0 0 100%)';
+            newPage.classList.add('active');
+            
+            void newPage.offsetWidth; // 强制重绘
+            newPage.classList.add('reveal');
+
+            // 切换按钮主题颜色
+            if (nextIndex === 2 || nextIndex === 3) {
+                nextPageBtn.classList.add('dark-theme');
+            } else {
+                nextPageBtn.classList.remove('dark-theme');
+            }
+
+            setTimeout(() => {
+                newPage.classList.remove('reveal');
+                newPage.style.clipPath = 'inset(0 0 0 0)';
+                currentPageIndex = nextIndex;
+                isAnimating = false;
+
+                // 如果不是最后一页，重新显示按钮
+                if (currentPageIndex < pages.length - 1) {
+                    setTimeout(() => {
+                        nextPageBtn.classList.add('show');
+                    }, 500);
+                }
+            }, 800); // 与 CSS 动画时长一致
+        }
+
+
+        /* =========================================================
+           产品轮播交互 (Page 2) - 仅拖拽，不影响翻页
+           ========================================================= */
+        const stage = document.getElementById('cardStage');
+        const cards = Array.from(document.querySelectorAll('.card-item'));
+        const dots = Array.from(document.querySelectorAll('.dot'));
+        const toast = document.getElementById('toast');
+        const swipeHint = document.getElementById('swipeHint');
+        let currentCardIndex = 0, startX = 0, currentX = 0, isDragging = false, hasSwiped = false;
+        const config = { scaleStep: 0.05, threshold: 100 };
+
+        function initCards() {
+            cards.forEach((card, i) => {
+                card.style.transition = 'none';
+                const relative = (i - currentCardIndex + 3) % 3;
+                updateCardTransform(card, relative);
+                card.style.zIndex = 3 - relative;
+            });
+            setTimeout(() => { cards.forEach(card => card.style.transition = ''); }, 50);
+        }
+
+        function updateCardTransform(card, relative, dragDeltaX = 0) {
+            if (relative === 0) {
+                card.style.transform = `translateX(${dragDeltaX}px) rotate(${dragDeltaX * 0.03}deg)`;
+                card.style.opacity = 1;
+            } else if (relative === 1) {
+                const progress = Math.min(Math.abs(dragDeltaX) / config.threshold, 1);
+                const scale = (1 - config.scaleStep) + (config.scaleStep * progress);
+                card.style.transform = `scale(${scale})`;
+                card.style.opacity = 0.8 + (0.2 * progress);
+            } else {
+                card.style.transform = `scale(${1 - config.scaleStep * 2})`;
+                card.style.opacity = 0.5;
+            }
+        }
+
+        function hideHint() { if (!hasSwiped) { hasSwiped = true; swipeHint.classList.add('hidden'); } }
+
+        function onDown(e) {
+            if (e.target.closest('button')) return;
+            isDragging = true; 
+            startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX; 
+            currentX = startX;
+            cards.forEach(card => card.style.transition = 'none');
+        }
+
+        function onMove(e) {
+            if (!isDragging) return;
+            currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const deltaX = currentX - startX;
+            if (e.cancelable) e.preventDefault();
+            cards.forEach((card, i) => {
+                const relative = (i - currentCardIndex + 3) % 3;
+                if (relative === 0) updateCardTransform(card, 0, deltaX);
+                else if (relative === 1) updateCardTransform(card, 1, deltaX);
+            });
+        }
+
+        function onUp() {
+            if (!isDragging) return;
+            isDragging = false; 
+            const deltaX = currentX - startX;
+            cards.forEach(card => card.style.transition = '');
+            
+            if (Math.abs(deltaX) > config.threshold) { 
+                swipeOut(deltaX > 0 ? 1 : -1); 
+                hideHint(); 
+            } else {
+                cards.forEach((card, i) => {
+                    const relative = (i - currentCardIndex + 3) % 3;
+                    updateCardTransform(card, relative, 0);
+                });
+            }
+        }
+
+        function swipeOut(direction) {
+            const topCard = cards[currentCardIndex];
+            topCard.style.transform = `translateX(${direction * 100}vw) rotate(${direction * 20}deg)`;
+            topCard.style.opacity = 0;
+            currentCardIndex = (currentCardIndex - direction + 3) % 3;
+            dots.forEach((dot, i) => dot.classList.toggle('active', i === currentCardIndex));
+            cards.forEach((card, i) => {
+                if (card === topCard) return;
+                const relative = (i - currentCardIndex + 3) % 3;
+                updateCardTransform(card, relative, 0);
+                card.style.zIndex = 3 - relative;
+            });
+            setTimeout(() => {
+                topCard.style.transition = 'none';
+                const relative = (cards.indexOf(topCard) - currentCardIndex + 3) % 3;
+                updateCardTransform(topCard, relative, 0);
+                topCard.style.zIndex = 3 - relative;
+                setTimeout(() => { topCard.style.transition = ''; }, 50);
+            }, 400);
+        }
+
+        stage.addEventListener('touchstart', onDown, { passive: false });
+        stage.addEventListener('touchmove', onMove, { passive: false });
+        stage.addEventListener('touchend', onUp);
+        stage.addEventListener('touchcancel', onUp);
+        stage.addEventListener('mousedown', onDown);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+
+        document.querySelectorAll('.card-item .btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const msg = this.dataset.feedback;
+                if (!msg) return;
+                toast.textContent = msg;
+                toast.classList.add('show');
+                clearTimeout(window._toastTimer);
+                window._toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+            });
+        });
+
+        initCards();
+    </script>
+</body>
+</html>
