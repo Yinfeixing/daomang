@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>视障公益交互体验 - 完整版</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&amp;display=swap" rel="stylesheet">
+    
+    <style>
+        /* ================= 全局重置 ================= */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'ZCOOL KuaiLe', sans-serif !important; 
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* 全局禁止滚动，交给各页面自己控制 */
+            background-color: #000;
+            -webkit-font-smoothing: antialiased;
+            -webkit-tap-highlight-color: transparent;
+        }
+        ::-webkit-scrollbar { width: 0; }
+
+        /* ================= 核心页面容器 ================= */
+        .page-wrapper {
+            display: none; 
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        .page-wrapper.active {
+            display: block; 
+        }
+
+        /* ================= 全局公用：过渡按钮 ================= */
+        .global-next-btn {
+            position: fixed; 
+            bottom: 40px; 
+            left: 50%; 
+            transform: translateX(-50%);
+            padding: 15px 40px; 
+            background: #30d158; 
+            color: #000; 
+            border: none; 
+            border-radius: 30px;
+            font-size: 20px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            z-index: 9999999 !important; 
+            pointer-events: auto !important; 
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(48, 209, 88, 0.4);
+        }
+        .global-next-btn:hover { 
+            transform: translateX(-50%) scale(1.05); 
+            background: #46e070; 
+        }
+
+        /* =================================================================
+           第一部分：体验包 (1-5屏)
+           ================================================================= */
+        #experience-section { background-color: #000; display: block; } 
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #1a1a1a;
+            --theme-dark: #2B2B2B;
+            --theme-blue: #5B7B9C;
+            --blur: 0px; --brightness: 1; --contrast: 1; --tunnel-size: 100%; --overlay-opacity: 0; 
+        }
+        
+        #screen-1 { position: absolute; inset: 0; background: #000; display: flex; justify-content: center; align-items: center; z-index: 10; transition: opacity 1s ease; overflow: hidden; }
+        .white-line { position: absolute; width: 80vw; max-width: 1000px; height: 2px; background-color: #fff; box-shadow: 0 0 30px 10px rgba(255,255,255,0.8); transform: scaleX(0); animation: lineAppear 1s cubic-bezier(0.25, 1, 0.5, 1) 1.5s forwards; z-index: 2; }
+        @keyframes lineAppear { 0% { transform: scaleX(0); opacity: 0; } 50% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
+        .white-ellipse { position: absolute; width: 90vw; max-width: 1200px; height: 80vh; max-height: 800px; background: #ffffff; border-radius: 50%; transform: scaleY(0); opacity: 0; animation: ellipseExpand 1s cubic-bezier(0.25, 1, 0.5, 1) 1.5s forwards; z-index: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        @keyframes ellipseExpand { 0% { transform: scaleY(0); opacity: 1; } 100% { transform: scaleY(1); opacity: 1; } }
+        .content-wrapper { opacity: 0; transform: translateY(20px); animation: fadeInUp 1s ease 2.5s forwards; padding: 40px; max-width: 800px; }
+        .main-text { font-size: clamp(18px, 2.5vw, 26px); line-height: 1.8; margin-bottom: 40px; color: #1a1a1a; letter-spacing: 1px; }
+        .enter-btn { padding: 15px 40px; font-size: 20px; font-family: inherit; color: #fff; background: #1a1a1a; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .enter-btn:active { transform: scale(0.96); }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        #screen-2 { display: none; position: absolute; inset: 0; background-color: var(--bg-color); color: var(--text-color); padding: 50px; flex-direction: column; overflow-y: auto; }
+        .back-btn { position: absolute; top: 40px; left: 40px; padding: 10px 20px; font-size: 16px; font-family: inherit; color: #555; background: transparent; border: 1px solid #ccc; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; z-index: 100; }
+        .header-title { font-size: 32px; font-weight: normal; margin-bottom: 50px; text-align: center; letter-spacing: 4px; color: #1a1a1a; }
+        .main-container { display: flex; gap: 60px; max-width: 1500px; margin: 0 auto; width: 100%; height: 60vh; margin-bottom: 40px; }
+        .slider-section { width: 140px; display: flex; flex-direction: column; align-items: center; position: relative; padding-bottom: 50px; }
+        .slide-hint { position: absolute; left: 0; top: 50%; transform: translateY(-50%); writing-mode: vertical-rl; letter-spacing: 5px; color: #b0b0b0; font-size: 14px; pointer-events: none; }
+        
+        .thermometer-track { position: relative; width: 8px; height: 300px; background: #e0e0e0; border-radius: 4px; margin-top: 20px; cursor: pointer; }
+        .slider-handle { position: absolute; width: 44px; height: 28px; background: #1a1a1a; border-radius: 50%; left: 50%; transform: translate(-50%, -50%); cursor: grab; box-shadow: 0 4px 12px rgba(0,0,0,0.3); top: 0%; display: flex; justify-content: center; align-items: center; z-index: 2; }
+        .slider-handle::after { content: ''; width: 14px; height: 2px; background: #fff; border-radius: 2px; }
+        .scale-labels { position: absolute; left: 45px; top: 20px; height: 300px; display: flex; flex-direction: column; justify-content: space-between; font-size: 16px; color: #888; pointer-events: none; }
+        .level-display { position: absolute; bottom: -50px; width: 100%; font-size: 24px; color: #1a1a1a; text-align: center; height: 40px; transition: all 0.3s ease; white-space: nowrap; }
+        
+        .viewport-section { flex: 1; position: relative; border-radius: 12px; overflow: hidden; background: #111; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .street-image { width: 100%; height: 100%; object-fit: cover; filter: blur(var(--blur)) brightness(var(--brightness)) contrast(var(--contrast)); transition: filter 0.1s ease-out; }
+        .tunnel-overlay { position: absolute; inset: 0; background: #000; mask-image: radial-gradient(circle at center, transparent var(--tunnel-size), #000 calc(var(--tunnel-size) + 5%)); -webkit-mask-image: radial-gradient(circle at center, transparent var(--tunnel-size), #000 calc(var(--tunnel-size) + 5%)); opacity: var(--overlay-opacity); pointer-events: none; transition: opacity 0.2s ease-out, mask-image 0.1s ease-out; }
+        .footer-text { text-align: center; margin-top: 30px; font-size: 20px; color: #1a1a1a; letter-spacing: 2px; font-weight: bold; }
+        .chart-section { max-width: 1000px; margin: 40px auto; text-align: center; }
+        .chart-header h3 { font-size: 24px; color: #222; margin-bottom: 10px; letter-spacing: 1px; }
+        .chart-header p { font-size: 16px; color: #666; margin-bottom: 30px; }
+        .chart-container { display: flex; align-items: flex-end; justify-content: center; gap: 50px; width: 100%; position: relative; padding-bottom: 30px; }
+        .ground-line { position: absolute; bottom: 30px; left: 5%; right: 5%; height: 3px; background-color: #333; border-radius: 2px; z-index: 1; }
+        .column { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 2; width: 120px; }
+        .data-num { font-size: 20px; font-weight: 800; color: #222; margin-bottom: 10px; opacity: 0; animation: fadeInNum 0.5s ease forwards; }
+        @keyframes fadeInNum { to { opacity: 1; } }
+        .figure-stack { display: flex; flex-direction: column-reverse; align-items: center; margin-bottom: 15px; }
+        .figure { width: 50px; height: 60px; margin-top: -15px; position: relative; opacity: 0; transform: translateY(20px); animation: popUpFigure 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .figure:first-child { margin-top: 0; }
+        @keyframes popUpFigure { to { opacity: 1; transform: translateY(0); } }
+        .svg-figure { width: 100%; height: 100%; stroke: #222; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+        .c4-light { fill: #cce5ff; } .c3-light { fill: #d4edda; } .c2-light { fill: #e2e3e5; } .c1-light { fill: #333333; }
+        .chart-label { position: absolute; bottom: -5px; font-size: 16px; font-weight: bold; color: #333; white-space: nowrap; }
+        .speech-bubble { position: absolute; top: -35px; left: 50%; transform: translateX(-50%); background: #fff; border: 2px solid #333; border-radius: 20px; padding: 2px 10px; font-size: 14px; font-weight: bold; color: #222; white-space: nowrap; z-index: 20; box-shadow: 2px 2px 0 #333; }
+        .speech-bubble::after { content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 10px solid #333; }
+        .speech-bubble::before { content: ''; position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #fff; z-index: 2; }
+        .next-btn { display: block; margin: 20px auto 50px; padding: 15px 40px; font-size: 18px; font-family: inherit; color: #fff; background: #1a1a1a; border: none; border-radius: 30px; cursor: pointer; transition: transform 0.3s; }
+        .next-btn:active { transform: scale(0.96); }
+
+        #screen-3 { display: none; position: absolute; inset: 0; background-color: #000; overflow: hidden; }
+        .bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1s ease; z-index: 1; }
+        .bg-img.active { opacity: 1; }
+        #scene1 img { transition: transform 1.5s ease, opacity 1s ease; }
+        #scene1.zoomed img { transform: scale(1.08); }
+        .cane { position: absolute; width: 350px; height: 40px; bottom: 15%; right: 10%; transform-origin: right center; transform: rotate(-35deg); cursor: grab; z-index: 20; touch-action: none; opacity: 0; pointer-events: none; }
+        .cane.active { opacity: 1; pointer-events: auto; }
+        .cane:active { cursor: grabbing; }
+        .cane svg { width: 100%; height: 100%; overflow: visible; }
+        .hint-text { position: absolute; top: 10%; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color: #fff; padding: 10px 25px; border-radius: 30px; font-size: 20px; z-index: 30; pointer-events: none; opacity: 0; transition: opacity 0.5s; }
+        .glass-panel { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -20px); width: 450px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 2px solid #fff; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; pointer-events: none; transition: all 0.4s; z-index: 40; }
+        .glass-panel.active { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+        .glass-panel h3 { font-size: 22px; margin-bottom: 25px; color: #333; }
+        .options { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .option-btn { width: 70px; height: 70px; border-radius: 50%; background: #fff; border: 2px solid var(--theme-blue); display: flex; justify-content: center; align-items: center; font-size: 28px; color: var(--theme-blue); cursor: pointer; transition: all 0.2s; }
+        .option-btn:hover { background: #EBF0F5; }
+        .option-btn.selected { background: var(--theme-blue); color: #fff; transform: scale(1.1); }
+        .submit-btn { margin-top: 20px; padding: 10px 30px; background: var(--theme-blue); color: #fff; border: none; border-radius: 20px; font-family: inherit; font-size: 16px; cursor: pointer; display: none; }
+        .submit-btn.active { display: inline-block; }
+        .feedback { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); font-size: 80px; opacity: 0; z-index: 50; pointer-events: none; }
+        .feedback.show { animation: popFeedback 1.5s ease forwards; }
+        @keyframes popFeedback { 0% { transform: translate(-50%, -50%) scale(0); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
+        .obstacle-item { position: absolute; z-index: 15; cursor: pointer; }
+        .hotspot-stone { width: 100px; height: 100px; left: 45%; top: 45%; }
+        .hotspot-scooter1 { width: 180px; height: 140px; left: 60%; top: 35%; }
+        .hotspot-scooter2 { width: 150px; height: 120px; left: 75%; top: 50%; }
+        .hotspot-box { width: 80px; height: 80px; left: 35%; top: 60%; }
+        .chart-modal { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 30px; border-radius: 20px; width: 600px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); z-index: 100; opacity: 0; pointer-events: none; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .chart-modal.active { opacity: 1; pointer-events: auto; transform: translate(-50%, -50%) scale(1); }
+        .chart-modal h2 { font-size: 1.4rem; margin-bottom: 25px; border-left: 5px solid #f2b705; padding-left: 10px; color: #333; }
+        .chart-row { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .chart-icon { font-size: 24px; width: 35px; text-align: center; }
+        .bar-bg { flex: 1; height: 30px; background: #f0f0f0; border-radius: 4px; position: relative; overflow: hidden; background-image: repeating-linear-gradient(90deg, transparent, transparent 15px, rgba(0,0,0,0.05) 15px, rgba(0,0,0,0.05) 18px); border: 1px solid #ddd;}
+        .bar { height: 100%; width: 0; transition: width 1s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; font-size: 14px; font-weight: bold; }
+        .c1 { background: #f2b705; color: #111; } .c2 { background: #e74c3c; color: #fff; } .c3 { background: #3498db; color: #fff; } .c4 { background: #888; color: #fff; }
+        .help-btn { display: block; margin: 25px auto 0; padding: 12px 30px; background: #2B2B2B; color: #fff; border: none; border-radius: 20px; font-family: inherit; font-size: 18px; cursor: pointer; transition: background 0.3s; }
+        .win-message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: rgba(255, 255, 255, 0.95); padding: 40px 60px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); font-size: 42px; color: #4CAF50; text-align: center; z-index: 100; opacity: 0; transition: all 0.5s; pointer-events: none; border: 4px solid #4CAF50; font-weight: bold; line-height: 1.5;}
+        .win-message.show { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        .next-screen-btn { position: absolute; bottom: 10%; left: 50%; transform: translateX(-50%); padding: 15px 40px; background: #1a1a1a; color: #fff; border: none; border-radius: 30px; font-family: inherit; font-size: 18px; cursor: pointer; display: none; z-index: 101; }
+
+        #screen-4 { display: none; background-color: #FAF7F2; min-height: 100vh; padding: 60px 20px; color: #2B2B2B; position: absolute; inset: 0; overflow-y: auto; z-index: 20; }
+        .braille-container { max-width: 1000px; margin: 0 auto; text-align: center; position: relative; }
+        .braille-title { font-size: 32px; margin-bottom: 20px; letter-spacing: 2px; }
+        .intro-section { display: flex; justify-content: center; align-items: center; gap: 60px; margin-bottom: 60px; background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .intro-text-box { text-align: left; max-width: 300px; }
+        .intro-text-box p { margin-bottom: 15px; font-size: 18px; line-height: 1.6; }
+        .braille-matrix { display: flex; gap: 10px; padding: 15px; background: #E8E3DA; border-radius: 12px; box-shadow: inset 0 4px 10px rgba(0,0,0,0.05); }
+        .braille-col { display: flex; flex-direction: column; gap: 10px; }
+        .dot { width: 30px; height: 30px; border-radius: 50%; background-color: #D1C9BC; box-shadow: inset 2px 2px 5px rgba(0,0,0,0.15); cursor: pointer; transition: all 0.2s; }
+        .dot.active { background-color: #2B2B2B; box-shadow: inset -2px -2px 5px rgba(255,255,255,0.2), 0 0 10px rgba(0,0,0,0.3); transform: scale(0.95); }
+        .interact-section { display: none; background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 60px; }
+        .interact-layout { display: flex; justify-content: space-between; align-items: center; gap: 40px; }
+        .example-box { width: 45%; background: #F9F9F9; border: 2px dashed #ccc; border-radius: 15px; padding: 30px; text-align: center; }
+        .example-box h4 { font-size: 24px; margin-bottom: 20px; color: #333; }
+        .example-char-row { display: flex; justify-content: space-around; font-size: 48px; margin-bottom: 10px; }
+        .example-pinyin-row { display: flex; justify-content: space-around; font-size: 24px; font-family: sans-serif; margin-bottom: 20px; color: #555; }
+        .example-matrix-row { display: flex; justify-content: space-around; margin-bottom: 10px; }
+        .example-cell { width: 48px; height: 70px; border: 2px solid #333; display: flex; gap: 5px; padding: 6px; background: #fff; }
+        .example-col { display: flex; flex-direction: column; gap: 5px; }
+        .e-dot { width: 12px; height: 12px; border-radius: 50%; background: transparent; }
+        .e-dot.active { background: #333; }
+        .example-num-row { display: flex; justify-content: space-around; font-size: 16px; font-family: sans-serif; color: #666; }
+        .play-box { width: 55%; display: flex; flex-direction: column; align-items: center; }
+        .play-box p { margin-bottom: 20px; font-size: 18px; color: #333; }
+        .target-braille { display: flex; gap: 15px; justify-content: center; margin: 20px 0; }
+        .success-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: #4CAF50; color: white; padding: 20px 40px; border-radius: 30px; font-size: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 100; }
+        .success-popup.show { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        .subway-scene { display: none; position: relative; width: 100%; height: 550px; border-radius: 20px; overflow: hidden; margin-bottom: 60px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .scene-img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity 0.8s ease; }
+        #sceneP6 { opacity: 0; pointer-events: none; }
+        .scene-bottom-info { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); text-align: center; width: 90%; max-width: 800px; background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .scene-bottom-info h3 { color: #2B2B2B; font-size: 20px; margin-bottom: 15px; }
+        .scene-bottom-info .help-btn { margin: 0 auto; background: #2B2B2B; color: #fff; padding: 12px 30px; border-radius: 20px; border: none; font-family: inherit; font-size: 18px; cursor: pointer; transition: background 0.3s; }
+        .scene-bottom-info .help-btn:hover { background: #000; }
+
+        #screen-5 { display: none; background-color: #F7F9FC; min-height: 100vh; color: #2B2B2B; padding: 60px 20px 120px; position: absolute; inset: 0; overflow-y: auto; z-index: 20; }
+        #screen-5 .back-btn { color: #333; border-color: #333; position: absolute; top: 40px; left: 40px; padding: 10px 20px; font-size: 16px; background: transparent; border: 1px solid #ccc; border-radius: 20px; cursor: pointer; }
+        .cards-header { text-align: center; margin-bottom: 50px; }
+        .cards-header h2 { font-size: 36px; letter-spacing: 2px; color: #1a1a1a; margin-bottom: 10px; }
+        .cards-header p { font-size: 18px; color: #666; }
+        .card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 900; display: none; opacity: 0; transition: opacity 0.4s ease; }
+        .card-overlay.active { display: block; opacity: 1; }
+        
+        .cards-container { display: flex; justify-content: center; gap: 2vw; width: 100%; max-width: 1400px; margin: 0 auto; flex-wrap: nowrap; position: relative; }
+        .flip-card { background-color: transparent; flex: 1; max-width: 380px; height: 500px; cursor: pointer; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), width 0.5s, height 0.5s, box-shadow 0.5s; perspective: 1200px; min-width: 0; }
+        .flip-card.zoomed { position: fixed; top: 50%; left: 50%; width: 85vw; max-width: 850px; height: 520px; transform: translate(-50%, -50%); z-index: 1000; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.8s; transform-style: preserve-3d; }
+        .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: #fff; display: flex; flex-direction: column; align-items: center; }
+        .flip-card-front img { width: 100%; height: 70%; object-fit: cover; transition: all 0.5s; }
+        .flip-card-front .card-text { height: 30%; display: flex; align-items: center; justify-content: center; padding: 20px; font-size: 22px; color: #2B2B2B; font-weight: bold; line-height: 1.5; transition: all 0.5s; }
+        .flip-card.zoomed .flip-card-front { flex-direction: row; }
+        .flip-card.zoomed .flip-card-front img { width: 60%; height: 100%; }
+        .flip-card.zoomed .flip-card-front .card-text { width: 40%; height: 100%; font-size: 28px; padding: 40px; background: #FAFAFA; }
+        .flip-card-back { transform: rotateY(180deg); padding: 20px; justify-content: center; background: #FAFAFA; }
+        .flip-card.zoomed .flip-card-back { padding: 40px; }
+        .flip-card-back img { width: 100%; height: 100%; object-fit: contain; }
+        .track-chart { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; position: relative; }
+        .track-title { font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #333; }
+        .track-timeline { position: relative; height: 120px; width: 100%; margin-top: 30px; }
+        .track-line { position: absolute; top: 50%; left: 5%; right: 5%; height: 8px; background: #E0E0E0; border-radius: 4px; transform: translateY(-50%); }
+        .track-progress { position: absolute; top: 50%; left: 5%; width: 0; height: 8px; background: #4CAF50; border-radius: 4px; transform: translateY(-50%); transition: width 2s ease-in-out; }
+        .paw { position: absolute; top: 50%; transform: translate(-50%, -50%); font-size: 36px; opacity: 1; transition: all 0.5s ease; z-index: 2; }
+        .paw.eliminated { opacity: 0.2; transform: translate(-50%, 30px) rotate(45deg); filter: grayscale(100%); }
+        .paw.survived { color: #F2B705; font-size: 48px; text-shadow: 0 0 15px rgba(242, 183, 5, 0.6); }
+        .track-stats { display: flex; justify-content: space-between; margin-top: 40px; padding: 0 20px; }
+        .stat-box { text-align: left; }
+        .stat-box .num { font-size: 36px; font-weight: bold; color: #E74C3C; font-family: monospace; }
+        .stat-box .label { font-size: 16px; color: #666; margin-top: 5px;}
+        .survival-rate { text-align: right; }
+        .survival-rate .num { font-size: 48px; color: #E74C3C; }
+        .flip-hint { position: absolute; bottom: 15px; font-size: 14px; color: #999; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        @media (max-width: 1024px) {
+            .cards-container { flex-wrap: wrap; }
+            .flip-card { width: 85%; max-width: 380px; margin-bottom: 20px; }
+        }
+
+        /* =================================================================
+           第二部分：展示包 (开屏、科技、法规、小事、照片墙)
+           ================================================================= */
+        
+        /* 开屏页 */
+        #page-intro-2 { background-color: #000; display: flex; justify-content: center; align-items: center; }
+        #page-intro-2 .scene { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; }
+        #page-intro-2 .light-beam {
+            position: absolute; top: -10%; left: 50%; transform: translateX(-50%);
+            width: 100vw; height: 120vh;
+            clip-path: polygon(46% 0, 54% 0, 75% 100%, 25% 100%);
+            background: radial-gradient(ellipse 40% 60% at 50% 0%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.7) 40%, transparent 80%),
+                        linear-gradient(to bottom, rgba(255, 255, 255, 0.3) 0%, transparent 90%);
+            z-index: 1; transition: clip-path 0.9s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: none;
+        }
+        #page-intro-2 .scene.is-active .light-beam { clip-path: polygon(10% 0, 90% 0, 150% 100%, -50% 100%); }
+        #page-intro-2 .tactile-paving {
+            position: absolute; bottom: 0; width: 100vw; height: 30vh; z-index: 1; opacity: 0;
+            transition: opacity 0.9s ease-in-out;
+            background-image: radial-gradient(circle at 15px 15px, rgba(255,255,255,0.3) 3px, transparent 4px),
+                              linear-gradient(rgba(255,255,255,0.05) 2px, transparent 2px);
+            background-size: 30px 30px, 100% 40px;
+            transform: perspective(600px) rotateX(70deg); transform-origin: bottom center;
+        }
+        #page-intro-2 .scene.is-active .tactile-paving { opacity: 1; }
+        #page-intro-2 .silhouette-container {
+            position: absolute; bottom: 18%; z-index: 2; display: flex; justify-content: center; align-items: flex-end;
+            filter: brightness(0) drop-shadow(0 0 15px rgba(255,255,255,0.5)); 
+        }
+        #page-intro-2 .person-img { height: 25vh; max-width: 80vw; object-fit: contain; }
+        #page-intro-2 .breathing-ring {
+            position: absolute; width: 60px; height: 60px; border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%; z-index: 3; opacity: 0; animation: breath 2.5s infinite ease-in-out; pointer-events: none;
+        }
+        @keyframes breath { 0% { transform: scale(0.8); opacity: 0.1; } 50% { transform: scale(1.6); opacity: 1; box-shadow: 0 0 30px rgba(255,255,255,0.5); } 100% { transform: scale(0.8); opacity: 0.1; } }
+        #page-intro-2 .title {
+            position: absolute; color: #fff; top: 25%; width: 100%; white-space: nowrap; text-align: center;
+            font-size: clamp(2.5rem, 6vw, 6.5rem); letter-spacing: 0.05em; z-index: 3;
+            transform: translateY(30px); opacity: 0;
+            text-shadow: 2px 4px 10px rgba(0,0,0,0.8), 0 0 20px rgba(255, 255, 255, 0.4);
+            transition: opacity 1s ease, transform 1s ease; pointer-events: none;
+        }
+        #page-intro-2 .scene.is-active .title { opacity: 1; transform: translateY(0); }
+
+        /* 科技页 */
+        #page-tech { background: #000; color: #fff; display: none; }
+        #page-tech .header { position: absolute; top: 0; left: 0; right: 0; padding: 35px 24px 50px; text-align: center; z-index: 100; background: linear-gradient(to bottom, rgba(0,0,0,.7), transparent); pointer-events: none; }
+        #page-tech .header h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: .15em; text-shadow: 0 4px 20px rgba(0,0,0,.9); }
+        #page-tech .card-stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; touch-action: none; z-index: 10; }
+        #page-tech .card { position: absolute; width: 100vw; height: 100vh; border-radius: 0; overflow: hidden; background: #111; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease; will-change: transform, opacity; transform-origin: center center; }
+        #page-tech .card .img-wrap { position: absolute; inset: 0; background-size: cover; background-position: center; }
+        #page-tech .card .img-wrap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.95) 0%, rgba(0,0,0,.4) 40%, rgba(0,0,0,.2) 80%, rgba(0,0,0,.6) 100%); }
+        #page-tech .card .info { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px 30px 180px; z-index: 2; pointer-events: none; }
+        #page-tech .card .btn { pointer-events: auto; display: inline-block; padding: 14px 32px; border: 1px solid rgba(255,255,255,.5); background: rgba(255,255,255,.15); backdrop-filter: blur(8px); color: #fff; font-size: 1rem; font-weight: 600; letter-spacing: .08em; border-radius: 30px; cursor: pointer; transition: background .2s; }
+        #page-tech .card .btn:active { background: rgba(255,255,255,.3); }
+        #page-tech .card .tag { font-size: .9rem; letter-spacing: .25em; color: #30d158; font-weight: 700; margin-bottom: 12px; }
+        #page-tech .card .name { font-size: 2.2rem; font-weight: 700; line-height: 1.2; margin-bottom: 16px; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+        #page-tech .card .desc { font-size: 1.1rem; line-height: 1.6; color: rgba(255,255,255,.85); margin-bottom: 24px; max-width: 90%; }
+        #page-tech .swipe-hint { position: absolute; bottom: 190px; left: 50%; transform: translateX(-50%); color: #fff; font-size: .9rem; font-weight: 600; letter-spacing: .1em; z-index: 999; display: flex; align-items: center; gap: 8px; background: rgba(48, 209, 88, 0.25); border: 1px solid #30d158; padding: 10px 24px; border-radius: 30px; backdrop-filter: blur(10px); transition: opacity 0.6s ease, transform 0.6s ease; box-shadow: 0 0 20px rgba(48, 209, 88, 0.3); pointer-events: none; animation: swipeAnim 1.5s infinite ease-in-out; }
+        #page-tech .swipe-hint.hidden { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        @keyframes swipeAnim { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-8px); } }
+        #page-tech .indicator { position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 50; padding: 8px 16px; background: rgba(0,0,0,.5); border-radius: 20px; backdrop-filter: blur(8px); }
+        #page-tech .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.3); transition: background .3s, width .3s; }
+        #page-tech .dot.active { background: #30d158; width: 18px; border-radius: 3px; }
+        #page-tech .fixed-caption { position: absolute; bottom: 25px; left: 20px; right: 20px; text-align: center; font-size: 1.1rem; letter-spacing: .08em; line-height: 1.6; color: rgba(255,255,255,.9); z-index: 30; pointer-events: none; text-shadow: 0 4px 12px rgba(0,0,0,.9); font-weight: 500; }
+        #page-tech .toast { position: absolute; bottom: 220px; left: 50%; transform: translateX(-50%) translateY(12px); background: rgba(20,20,20,.96); border: 1px solid rgba(48,209,88,.5); color: #30d158; font-size: .95rem; font-weight: 600; padding: 14px 28px; border-radius: 24px; opacity: 0; pointer-events: none; transition: all .3s; z-index: 1000; }
+        #page-tech .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* 法规页 */
+        #page-law { background-color: #fafafa; color: #1a1a1a; display: none; }
+        #page-law .header { padding: 50px 8% 20px; max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 10; }
+        #page-law .header-left h1 { white-space: nowrap; font-size: clamp(2.5rem, 4.5vw, 4rem); font-weight: 300; letter-spacing: -0.02em; }
+        #page-law .header-left h1 strong { font-weight: 700; color: #111; }
+        #page-law .header-right { max-width: 320px; font-size: 1.1rem; color: #666; line-height: 1.6; text-align: right; margin-top: 15px; }
+        #page-law .hanging-system { position: relative; width: 100%; height: calc(100vh - 180px); top: 80px; }
+        #page-law .rope-svg { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 1100px; height: 120px; pointer-events: none; z-index: 1; overflow: visible; }
+        #page-law .cards-container { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 1100px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 2; }
+        #page-law .card-unit { position: relative; width: 280px; transform-origin: top center; will-change: transform; }
+        #page-law .card-unit.item-1 { margin-top: -2px; animation: swingLeft 4s ease-in-out infinite alternate; }
+        #page-law .card-unit.item-2 { margin-top: 30px; animation: swingMid 4.5s ease-in-out infinite alternate; }
+        #page-law .card-unit.item-3 { margin-top: -2px; animation: swingRight 3.8s ease-in-out infinite alternate; }
+        @keyframes swingLeft { 0% { transform: rotate(-8deg); } 100% { transform: rotate(-3deg); } }
+        @keyframes swingMid { 0% { transform: rotate(-3deg); } 100% { transform: rotate(3deg); } }
+        @keyframes swingRight { 0% { transform: rotate(3deg); } 100% { transform: rotate(8deg); } }
+        #page-law .card-unit:hover { animation-play-state: paused; z-index: 50; }
+        #page-law .clip { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); width: 14px; height: 30px; background: linear-gradient(180deg, #333, #111); border-radius: 3px; z-index: 5; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        #page-law .clip::before { content: ''; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 10px; height: 16px; border: 2px solid #888; border-radius: 5px; background: #fafafa; z-index: -1; }
+        #page-law .card-inner { position: relative; width: 100%; height: 440px; transition: transform 0.7s cubic-bezier(0.3, 0, 0.2, 1); transform-style: preserve-3d; border-radius: 8px; background: #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eaeaea; }
+        #page-law .card-unit:hover .card-inner { transform: rotateY(180deg); }
+        #page-law .card-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 8px; overflow: hidden; background: #fff; }
+        #page-law .card-front { display: flex; flex-direction: column; }
+        #page-law .card-front img { width: 100%; height: 320px; object-fit: cover; }
+        #page-law .card-front .text-box { flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 10px; border-top: 1px solid #f0f0f0; background: #fff; }
+        #page-law .card-front .text-box p { font-size: 1.25rem; font-weight: 700; color: #111; white-space: nowrap; }
+        #page-law .card-back { transform: rotateY(180deg); }
+        #page-law .card-back img { width: 100%; height: 100%; object-fit: cover; }
+        #page-law .hint-container { position: absolute; right: 50px; bottom: 50px; display: flex; align-items: center; gap: 16px; z-index: 100; pointer-events: none; }
+        #page-law .hint-text { font-size: 1.1rem; font-weight: 500; color: #555; letter-spacing: 1px; }
+        #page-law .breathing-ring-hint { position: relative; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; }
+        #page-law .breathing-ring-hint::before { content: ''; position: absolute; width: 100%; height: 100%; border: 2px solid #30d158; border-radius: 50%; animation: breatheOuter 2s infinite ease-out; }
+        #page-law .breathing-ring-hint::after { content: ''; width: 8px; height: 8px; background: #30d158; border-radius: 50%; animation: breatheInner 2s infinite ease-in-out; }
+        @keyframes breatheOuter { 0% { transform: scale(0.6); opacity: 1; box-shadow: 0 0 10px rgba(48, 209, 88, 0.4); } 100% { transform: scale(1.6); opacity: 0; box-shadow: 0 0 30px rgba(48, 209, 88, 0); } }
+        @keyframes breatheInner { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.5); opacity: 1; } }
+
+        /* 小事页 */
+        #page-small { background-color: #fafafa; color: #1a1a1a; display: none; }
+        #page-small .header { padding: 50px 8% 20px; max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10; }
+        #page-small .header h1 { white-space: nowrap; font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 300; letter-spacing: -0.02em; color: #111; }
+        #page-small .header h1 strong { font-weight: 700; }
+        #page-small .header-right { white-space: nowrap; font-size: clamp(0.9rem, 2vw, 1.15rem); color: #666; text-align: center; margin-top: 16px; letter-spacing: 0.05em; }
+        #page-small .hanging-system { position: relative; width: 100%; height: calc(100vh - 200px); top: 60px; }
+        #page-small .rope-svg { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 1100px; height: 120px; pointer-events: none; z-index: 1; overflow: visible; }
+        #page-small .cards-container { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 1100px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 2; }
+        #page-small .card-unit { position: relative; width: 280px; transform-origin: top center; will-change: transform; }
+        #page-small .card-unit.item-1 { margin-top: -2px; animation: swingLeft2 4s ease-in-out infinite alternate; }
+        #page-small .card-unit.item-2 { margin-top: 30px; animation: swingMid2 4.5s ease-in-out infinite alternate; }
+        #page-small .card-unit.item-3 { margin-top: -2px; animation: swingRight2 3.8s ease-in-out infinite alternate; }
+        @keyframes swingLeft2 { 0% { transform: rotate(-8deg); } 100% { transform: rotate(-3deg); } }
+        @keyframes swingMid2 { 0% { transform: rotate(-3deg); } 100% { transform: rotate(3deg); } }
+        @keyframes swingRight2 { 0% { transform: rotate(3deg); } 100% { transform: rotate(8deg); } }
+        #page-small .card-unit:hover { animation-play-state: paused; z-index: 50; }
+        #page-small .clip { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); width: 14px; height: 30px; background: linear-gradient(180deg, #333, #111); border-radius: 3px; z-index: 5; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+        #page-small .clip::before { content: ''; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); width: 10px; height: 16px; border: 2px solid #888; border-radius: 5px; background: #fafafa; z-index: -1; }
+        #page-small .card-inner { position: relative; width: 100%; height: 400px; transition: transform 0.7s cubic-bezier(0.3, 0, 0.2, 1); transform-style: preserve-3d; border-radius: 8px; background: #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eaeaea; }
+        #page-small .card-unit:hover .card-inner { transform: rotateY(180deg); }
+        #page-small .card-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 8px; overflow: hidden; background: #fff; }
+        #page-small .card-front { height: 100%; }
+        #page-small .card-front img { width: 100%; height: 100%; object-fit: cover; }
+        #page-small .card-back { transform: rotateY(180deg); height: 100%; }
+        #page-small .card-back img { width: 100%; height: 100%; object-fit: cover; }
+        #page-small .hint-container { position: absolute; right: 50px; bottom: 50px; display: flex; align-items: center; gap: 16px; z-index: 100; pointer-events: none; }
+        #page-small .hint-text { font-size: 1.1rem; font-weight: 500; color: #555; letter-spacing: 1px; }
+        #page-small .breathing-ring-hint { position: relative; width: 36px; height: 36px; display: flex; justify-content: center; align-items: center; }
+        #page-small .breathing-ring-hint::before { content: ''; position: absolute; width: 100%; height: 100%; border: 2px solid #30d158; border-radius: 50%; animation: breatheOuter 2s infinite ease-out; }
+        #page-small .breathing-ring-hint::after { content: ''; width: 8px; height: 8px; background: #30d158; border-radius: 50%; animation: breatheInner 2s infinite ease-in-out; }
+
+        /* ================= 照片墙（严格照搬最后一屏） ================= */
+        #page-gallery { 
+            background-color: #ffffff; 
+            display: none; 
+            height: 100vh;
+            overflow-y: auto; /* 让页面内部可以滚动 */
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            scroll-timeline-name: --gallery-timeline;
+            scroll-timeline-axis: block;
+        }
+        
+        #page-gallery .progress-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: rgba(0, 0, 0, 0.05);
+            z-index: 9999;
+        }
+        #page-gallery .progress-bar {
+            height: 100%;
+            background: #1a1a1a;
+            width: 0%;
+            transform-origin: left;
+            animation: growProgress auto linear;
+            animation-timeline: --gallery-timeline;
+        }
+        @keyframes growProgress {
+            from { transform: scaleX(0); }
+            to { transform: scaleX(1); }
+        }
+
+        #page-gallery .gallery-wrapper {
+            padding: 6vh 4vw;
+            max-width: 1600px;
+            margin: 0 auto;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+        #page-gallery .masonry-grid {
+            display: flex;
+            justify-content: center;
+            gap: 24px; 
+            align-items: flex-start;
+        }
+        #page-gallery .masonry-col {
+            display: flex;
+            flex-direction: column;
+            gap: 24px; 
+            width: 33.33%;
+            flex-shrink: 0;
+        }
+        #page-gallery .masonry-col:nth-child(1) { margin-top: 0; }
+        #page-gallery .masonry-col:nth-child(2) { margin-top: 10vh; }
+        #page-gallery .masonry-col:nth-child(3) { margin-top: 4vh; }
+        #page-gallery .photo-card {
+            position: relative;
+            width: 100%;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+            background-color: #f5f5f5; 
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            will-change: opacity, transform;
+        }
+        #page-gallery .photo-card.reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #page-gallery .photo-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        #page-gallery .outro-section {
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            padding: 0 20px;
+            background-color: #e8e6e1;
+        }
+        #page-gallery .outro-title {
+            font-size: clamp(1.8rem, 5vw, 3rem); 
+            line-height: 1.8; letter-spacing: 0.1em;
+            color: #1a1a1a; margin-bottom: 30px;
+        }
+        #page-gallery .outro-desc {
+            font-size: clamp(0.95rem, 2vw, 1.1rem); 
+            color: #555; line-height: 2; letter-spacing: 0.05em;
+        }
+
+        /* 返回按钮 */
+        #page-gallery .gallery-back-btn {
+            position: fixed;
+            top: 24px;
+            padding: 10px 22px;
+            font-family: 'ZCOOL KuaiLe', sans-serif;
+            font-size: 16px;
+            color: #1a1a1a;
+            background: rgba(255,255,255,0.92);
+            border: 1px solid #ccc;
+            border-radius: 22px;
+            cursor: pointer;
+            z-index: 10000;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: all .25s;
+        }
+        #page-gallery .gallery-back-btn:hover {
+            background: #1a1a1a;
+            color: #fff;
+        }
+        #page-gallery .gallery-back-btn-left { left: 24px; }
+        #page-gallery .gallery-back-btn-right { right: 24px; }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            #page-law .hanging-system, #page-small .hanging-system { height: auto; top: 0; padding-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 40px; margin-bottom: 80px; }
+            #page-law .rope-svg, #page-law .clip, #page-small .rope-svg, #page-small .clip { display: none; }
+            #page-law .cards-container, #page-small .cards-container { position: relative; flex-direction: column; align-items: center; width: 100%; left: 0; transform: none; }
+            #page-law .card-unit, #page-small .card-unit { margin-top: 0 !important; width: 88vw; max-width: 320px; animation: none; margin-bottom: 20px; }
+            #page-law .card-inner { height: 400px; }
+            #page-law .card-front img { height: 280px; }
+            #page-law .card-front .text-box p { font-size: 1.15rem; }
+            #page-law .hint-container, #page-small .hint-container { right: 20px; bottom: 20px; }
+            #page-gallery .gallery-wrapper { padding: 4vh 3vw; }
+            #page-gallery .masonry-grid { gap: 12px; }
+            #page-gallery .masonry-col { gap: 12px; }
+            #page-gallery .masonry-col:nth-child(2) { margin-top: 5vh; }
+            #page-gallery .masonry-col:nth-child(3) { margin-top: 2vh; }
+            #page-gallery .gallery-back-btn { top: 16px; padding: 8px 16px; font-size: 14px; }
+            #page-gallery .gallery-back-btn-left { left: 12px; }
+            #page-gallery .gallery-back-btn-right { right: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= 第一部分：体验包 (依次包含前五屏) ================= -->
+    <div class="page-wrapper active" id="experience-section">
+        <div id="screen-1">
+            <div class="white-line"></div>
+            <div class="white-ellipse">
+                <div class="content-wrapper">
+                    <p class="main-text">黑暗于我们而言，只有一瞬，但对于中国1731万视力残疾人来说，我们刚刚的一瞬，是他们的日常。</p>
+                    <button class="enter-btn" onclick="enterExperience()">点击，进入他们的视野</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-2">
+            <button class="back-btn" onclick="backToFirst()">↺ 重新体验</button>
+            <h2 class="header-title">感受他们的视野</h2>
+            <div class="main-container">
+                <div class="slider-section">
+                    <div class="slide-hint">滑动体验</div>
+                    <div class="thermometer-track" id="track"><div class="slider-handle" id="handle"></div></div>
+                    <div class="scale-labels"><span>0.3</span><span>0.1</span><span>0.05</span><span>0.02</span><span>无光感</span></div>
+                    <div class="level-display" id="levelText">正常视力</div>
+                </div>
+                <div class="viewport-section">
+                    <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&amp;w=2000&amp;auto=format&amp;fit=crop" alt="街景" class="street-image" id="streetImg">
+                    <div class="tunnel-overlay" id="tunnelOverlay"></div>
+                </div>
+            </div>
+            <div class="footer-text">1731万人里，大多数不是“全盲”，他们活在“还能看见一点，但不够用的”中间地带。</div>
+            
+            <div class="chart-section">
+                <div class="chart-header">
+                    <h3>中国视力残疾不同等级人群数量</h3>
+                    <p>全国视障人数约 1731万（其中盲人800多万，低视力者900多万）</p>
+                </div>
+                <div class="chart-container">
+                    <div class="ground-line"></div>
+                    <div class="column">
+                        <div class="speech-bubble">大多数</div>
+                        <div class="data-num" style="animation-delay: 0.1s;">约480万</div>
+                        <div class="figure-stack" id="col-4"></div>
+                        <div class="chart-label">四级低视力</div>
+                    </div>
+                    <div class="column">
+                        <div class="data-num" style="animation-delay: 0.3s;">约420万</div>
+                        <div class="figure-stack" id="col-3"></div>
+                        <div class="chart-label">三级低视力</div>
+                    </div>
+                    <div class="column">
+                        <div class="data-num" style="animation-delay: 0.5s;">约400万</div>
+                        <div class="figure-stack" id="col-2"></div>
+                        <div class="chart-label">二级盲</div>
+                    </div>
+                    <div class="column">
+                        <div class="data-num" style="animation-delay: 0.7s;">约400万</div>
+                        <div class="figure-stack" id="col-1"></div>
+                        <div class="chart-label">一级盲</div>
+                    </div>
+                </div>
+            </div>
+            <button class="next-btn" onclick="enterScreen3()">走进他们的日常 →</button>
+        </div>
+
+        <div id="screen-3">
+            <button class="back-btn" onclick="backToScreen2()" style="color:#fff; border-color:#fff; background:rgba(0,0,0,0.5); z-index:999;">← 返回</button>
+            <div class="hint-text" id="hintText"></div>
+            <div class="bg-img active" id="scene1"><img src="p1.png" style="width:100%; height:100%; object-fit:cover;"></div>
+            <img src="p2.png" class="bg-img" id="scene2">
+            <img src="p3.png" class="bg-img" id="scene3">
+            <img src="p4.png" class="bg-img" id="scene4">
+            
+            <div class="cane" id="cane">
+                <svg viewBox="0 0 300 40">
+                    <line x1="20" y1="20" x2="260" y2="20" stroke="#E6DBCF" stroke-width="8" stroke-linecap="round"></line>
+                    <rect x="230" y="12" width="30" height="16" fill="#7A90A4" rx="4"></rect>
+                    <rect x="260" y="8" width="40" height="24" fill="#F4EBE1" rx="10"></rect>
+                    <circle cx="280" cy="20" r="3" fill="#F0C2A2"></circle>
+                    <rect x="10" y="12" width="20" height="16" fill="#E74C3C" rx="6"></rect>
+                </svg>
+            </div>
+
+            <div class="glass-panel" id="glassPanel"><h3 id="questionText"></h3><div class="options" id="optionsContainer"></div><button class="submit-btn" id="submitBtn" onclick="submitAnswer()">确认提交</button></div>
+            <div class="feedback" id="feedback"></div>
+            <div id="obstacleLayer" style="display: none;">
+                <div class="obstacle-item hotspot-stone" id="stone"></div>
+                <div class="obstacle-item hotspot-scooter1" id="scooter1"></div>
+                <div class="obstacle-item hotspot-scooter2" id="scooter2"></div>
+                <div class="obstacle-item hotspot-box" id="box"></div>
+            </div>
+            <div class="chart-modal" id="chartModal">
+                <h2>盲道障碍物覆盖率</h2>
+                <div class="chart-row"><div class="chart-icon">🛵</div><div class="bar-bg"><div class="bar c1" data-w="45">45%</div></div></div>
+                <div class="chart-row"><div class="chart-icon">🧱</div><div class="bar-bg"><div class="bar c2" data-w="30">30%</div></div></div>
+                <div class="chart-row"><div class="chart-icon">🏪</div><div class="bar-bg"><div class="bar c3" data-w="15">15%</div></div></div>
+                <div class="chart-row"><div class="chart-icon">📦</div><div class="bar-bg"><div class="bar c4" data-w="10">10%</div></div></div>
+                <button class="help-btn" onclick="clearObstacles()">帮助他们：移开障碍物</button>
+            </div>
+            <div class="win-message" id="winMessage">太棒了！<br>盲道清理干净啦！</div>
+            <button class="next-screen-btn" id="toBrailleBtn" onclick="enterScreen4()">继续：了解盲文 →</button>
+        </div>
+
+        <div id="screen-4">
+            <button class="back-btn" onclick="backToScreen3()" style="color:#333; border-color:#333;">← 返回</button>
+            <div class="braille-container">
+                <h2 class="braille-title">你知道盲文是怎么构成的吗？</h2>
+                <div class="intro-section">
+                    <div class="intro-text-box">
+                        <p><strong>盲文</strong>的基本单位叫做“方”，由 2 列 3 行共 6 个点组成，可有 64 种组合。</p>
+                        <p>它的书写和阅读方向很有趣，可以概括为“<strong>反写正读</strong>”。</p>
+                    </div>
+                    <div style="display: flex; gap: 20px;">
+                        <div class="braille-matrix">
+                            <div class="braille-col"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                            <div class="braille-col"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                        </div>
+                        <div class="braille-matrix">
+                            <div class="braille-col"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                            <div class="braille-col"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                        </div>
+                    </div>
+                </div>
+                <button class="enter-btn" id="tryBtn" onclick="startBrailleTest()" style="margin-bottom: 40px; color: #fff; background: #2B2B2B;">你来试试吧</button>
+                <div class="interact-section" id="interactSection">
+                    <div class="interact-layout">
+                        <div class="example-box">
+                            <h4>示例：你好</h4>
+                            <div class="example-char-row"><span>你</span><span>好</span></div>
+                            <div class="example-pinyin-row"><span>n</span><span>i</span><span>h</span><span>ao</span></div>
+                            <div class="example-matrix-row">
+                                <div class="example-cell"><div class="example-col"><div class="e-dot active"></div><div class="e-dot"></div><div class="e-dot active"></div></div><div class="example-col"><div class="e-dot active"></div><div class="e-dot active"></div><div class="e-dot"></div></div></div>
+                                <div class="example-cell"><div class="example-col"><div class="e-dot"></div><div class="e-dot active"></div><div class="e-dot"></div></div><div class="example-col"><div class="e-dot active"></div><div class="e-dot"></div><div class="e-dot"></div></div></div>
+                                <div class="example-cell"><div class="example-col"><div class="e-dot active"></div><div class="e-dot active"></div><div class="e-dot"></div></div><div class="example-col"><div class="e-dot"></div><div class="e-dot active"></div><div class="e-dot"></div></div></div>
+                                <div class="example-cell"><div class="example-col"><div class="e-dot"></div><div class="e-dot active"></div><div class="e-dot active"></div></div><div class="example-col"><div class="e-dot"></div><div class="e-dot active"></div><div class="e-dot"></div></div></div>
+                            </div>
+                            <div class="example-num-row"><span>1.3 4.5</span><span>2 4</span><span>1.2 5</span><span>2.3 5</span></div>
+                        </div>
+                        <div class="play-box">
+                            <p>请对照左侧示例，点出“你好”的盲文：</p>
+                            <div class="target-braille" id="targetBraille"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="subway-scene" id="subwayScene">
+                    <img src="p5.png" id="sceneP5" class="scene-img">
+                    <img src="p6.png" id="sceneP6" class="scene-img">
+                    <div class="scene-bottom-info" id="sceneInfo">
+                        <h3>常常出现这样的情况，公共服务领域盲文标识不规范，甚至缺失。</h3>
+                        <button class="help-btn" id="helpBtn" onclick="showFixedScene()">帮助他们</button>
+                    </div>
+                </div>
+                <div id="gotoGuideDogContainer" style="display:none; text-align:center; margin-top: 40px; padding-bottom: 60px;">
+                    <button class="enter-btn" onclick="enterScreen5()" style="background:#1a1a1a; color:#fff;">继续：了解导盲犬 →</button>
+                </div>
+            </div>
+            <div class="success-popup" id="successPopup">你好！</div>
+        </div>
+
+        <div id="screen-5">
+            <button class="back-btn" onclick="backToScreen4()">← 返回</button>
+            
+            <div class="cards-header">
+                <h2>走进导盲犬的世界</h2>
+                <p>点击卡片翻转并放大查看数据详情</p>
+            </div>
+
+            <div class="card-overlay" id="cardOverlay" onclick="closeZoomedCard()"></div>
+
+            <div class="cards-container">
+                <div class="flip-card" onclick="handleCardClick(this, event)">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <img src="p7.jpg" alt="商场被拒">
+                            <div class="card-text">很多公共场所被人为禁止导盲犬进入。</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <img src="p10.png" alt="准许进入场所分类">
+                        </div>
+                        <div class="flip-hint">点击查看详情 ↺</div>
+                    </div>
+                </div>
+
+                <div class="flip-card" onclick="handleCardClick(this, event)">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <img src="p8.jpg" alt="无法申请">
+                            <div class="card-text">不是不想，而是申请不到。</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <img src="p11.png" alt="供需数据对比">
+                        </div>
+                        <div class="flip-hint">点击查看详情 ↺</div>
+                    </div>
+                </div>
+
+                <div class="flip-card" id="trainingCard" onclick="handleCardClick(this, event)">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <img src="p9.jpg" alt="训练基地">
+                            <div class="card-text">一只导盲犬要训练两年，成功率不到30%，成本需要二十万。</div>
+                        </div>
+                        <div class="flip-card-back">
+                            <div class="track-chart">
+                                <div class="track-title">24个月训练跑道</div>
+                                <div class="track-timeline" id="trackTimeline">
+                                    <div class="track-line"></div>
+                                    <div class="track-progress" id="trackProgress"></div>
+                                </div>
+                                <div class="track-stats">
+                                    <div class="stat-box">
+                                        <div class="num" id="costCounter">0 元</div>
+                                        <div class="label">训练成本</div>
+                                    </div>
+                                    <div class="stat-box survival-rate">
+                                        <div class="num">&lt; 30%</div>
+                                        <div class="label">成功率</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flip-hint">点击查看详情 ↺</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 40px; position: relative; z-index: 99999;">
+                <button class="enter-btn" onclick="document.getElementById('experience-section').style.display='none'; document.getElementById('page-intro-2').style.display='flex';" style="background: #30d158; color: #000;">进入下一章：从看见到改变 →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= 第二部分：展示包 (依次包含后五屏) ================= -->
+    
+    <!-- 1. 独立开屏 -->
+    <div class="page-wrapper" id="page-intro-2">
+        <div class="scene" id="scene">
+            <div class="light-beam" id="lightBeam"></div>
+            <div class="tactile-paving" id="tactilePaving"></div>
+            <div class="silhouette-container">
+                <img src="silhouette.png" class="person-img" alt="持杖人物">
+            </div>
+            <div class="breathing-ring" id="breathingRing"></div>
+            <h1 class="title" id="title">从看见 到改变</h1>
+        </div>
+        <button id="btnToTech" class="global-next-btn" style="display: none;" onclick="document.getElementById('page-intro-2').style.display='none'; document.getElementById('page-tech').style.display='block';">进入科技世界 →</button>
+    </div>
+
+    <!-- 2. 科技 -->
+    <div class="page-wrapper" id="page-tech">
+        <header class="header">
+            <h1>科技代替眼睛看世界</h1>
+        </header>
+
+        <div class="card-stage" id="cardStage">
+            <div class="card" data-index="0">
+                <div class="img-wrap" style="background-image: url('img1.jpg');"></div>
+                <div class="info">
+                    <span class="tag">AI VISION</span>
+                    <h2 class="name">AI 视觉描述</h2>
+                    <p class="desc">取景框实时识物，精准感知台阶与共享单车，把眼前的环境读给你听。</p>
+                    <button class="btn" data-feedback="前方 3 米有台阶，右侧有共享单车">识别画面</button>
+                </div>
+            </div>
+            <div class="card" data-index="1">
+                <div class="img-wrap" style="background-image: url('img2.jpg');"></div>
+                <div class="info">
+                    <span class="tag">TEXT READER</span>
+                    <h2 class="name">智能视障阅读器</h2>
+                    <p class="desc">扫过纸面，文字即刻化为流利语音，让阅读不再有门槛。</p>
+                    <button class="btn" data-feedback="🔊 正在朗读当前段落……">试听朗读</button>
+                </div>
+            </div>
+            <div class="card" data-index="2">
+                <div class="img-wrap" style="background-image: url('img3.jpg');"></div>
+                <div class="info">
+                    <span class="tag">SMART CANE</span>
+                    <h2 class="name">智能盲杖</h2>
+                    <p class="desc">地面激光探测结合触觉反馈，为每一步护航，提前感知前方障碍。</p>
+                    <button class="btn" data-feedback="⚠️ 前方 2.4 米处存在台阶障碍">启动探测</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="swipe-hint" id="swipeHint">
+            <span>👈 左右滑动切换产品 👉</span>
+        </div>
+
+        <div class="indicator" id="indicator">
+            <div class="dot active" data-index="0"></div>
+            <div class="dot" data-index="1"></div>
+            <div class="dot" data-index="2"></div>
+        </div>
+
+        <div class="fixed-caption">
+            科技不是让他们「看见」，<br>是让世界多一种被读出来的方式。
+        </div>
+
+        <div class="toast" id="toast"></div>
+        
+        <button class="global-next-btn" onclick="document.getElementById('page-tech').style.display='none'; document.getElementById('page-law').style.display='block';">查看制度改变 →</button>
+    </div>
+
+    <!-- 3. 法规 -->
+    <div class="page-wrapper" id="page-law">
+        <header class="header">
+            <div class="header-left">
+                <h1>从一个人 <strong>到一条法规</strong></h1>
+            </div>
+            <div class="header-right">
+                制度的推进，正在填补他们生活中的裂缝。
+            </div>
+        </header>
+
+        <div class="hanging-system">
+            <svg class="rope-svg" preserveAspectRatio="none" viewBox="0 0 1100 120">
+                <path d="M 0 0 Q 550 240 1100 0" fill="none" stroke="#c0c0c0" stroke-width="2.5"></path>
+            </svg>
+
+            <div class="cards-container">
+                <div class="card-unit item-1">
+                    <div class="clip"></div>
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <img src="front1.jpg" alt="导盲犬困境">
+                            <div class="text-box">
+                                <p>公共场所拒入现象频发</p>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <img src="back1.jpg" alt="导盲犬改变">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-unit item-2">
+                    <div class="clip"></div>
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <img src="front2.jpg" alt="盲文困境">
+                            <div class="text-box">
+                                <p>公共标识缺少触觉信息</p>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <img src="back2.jpg" alt="盲文改变">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-unit item-3">
+                    <div class="clip"></div>
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <img src="front3.jpg" alt="出行困境">
+                            <div class="text-box">
+                                <p>出行不便，辅具价格高</p>
+                            </div>
+                        </div>
+                        <div class="card-face card-back">
+                            <img src="back3.jpg" alt="辅具改变">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hint-container">
+            <span class="hint-text">悬停查看改变</span>
+            <div class="breathing-ring-hint"></div>
+        </div>
+        
+        <button class="global-next-btn" onclick="document.getElementById('page-law').style.display='none'; document.getElementById('page-small').style.display='block';">看看不费力的小事 →</button>
+    </div>
+
+    <!-- 4. 小事 -->
+    <div class="page-wrapper" id="page-small">
+        <header class="header">
+            <h1><strong>三件</strong>不费力的小事</h1>
+            <div class="header-right">
+                一些微小的改变，能让他们在这个世界走得更容易些。
+            </div>
+        </header>
+
+        <div class="hanging-system">
+            <svg class="rope-svg" preserveAspectRatio="none" viewBox="0 0 1100 120">
+                <path d="M 0 0 Q 550 240 1100 0" fill="none" stroke="#c0c0c0" stroke-width="2.5"></path>
+            </svg>
+
+            <div class="cards-container">
+                <div class="card-unit item-1">
+                    <div class="clip"></div>
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <img src="small-front1.jpg" alt="盲道被占">
+                        </div>
+                        <div class="card-face card-back">
+                            <img src="small-back1.jpg" alt="盲道科普">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-unit item-2">
+                    <div class="clip"></div>
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <img src="small-front2.jpg" alt="遇到导盲犬">
+                        </div>
+                        <div class="card-face card-back">
+                            <img src="small-back2.jpg" alt="四不问一问">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-unit item-3">
+                    <div class="clip"></div>
+                    <div class="card-inner">
+                        <div class="card-face card-front">
+                            <img src="small-front3.jpg" alt="协助出行">
+                        </div>
+                        <div class="card-face card-back">
+                            <img src="small-back3.jpg" alt="导盲随行法">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hint-container">
+            <span class="hint-text">悬停查看科普</span>
+            <div class="breathing-ring-hint"></div>
+        </div>
+        
+        <button class="global-next-btn" onclick="enterGallery()">走向真实世界 →</button>
+    </div>
+
+    <!-- 5. 照片墙（完全按原 vision.html 结构） -->
+    <div class="page-wrapper" id="page-gallery">
+        <div class="progress-container">
+            <div class="progress-bar"></div>
+        </div>
+
+        <button class="gallery-back-btn gallery-back-btn-left" onclick="backToExperienceStart()">← 回到开头</button>
+        <button class="gallery-back-btn gallery-back-btn-right" onclick="backToSmallPage()">← 上一页</button>
+
+        <div class="gallery-wrapper" id="galleryWrapper">
+            <div class="masonry-grid" id="masonryGrid">
+                <div class="masonry-col" id="gallery-col-1"></div>
+                <div class="masonry-col" id="gallery-col-2"></div>
+                <div class="masonry-col" id="gallery-col-3"></div>
+            </div>
+        </div>
+
+        <section class="outro-section">
+            <h2 class="outro-title">不同的感知<br>一样的梦想</h2>
+            <p class="outro-desc">
+                或许他们的世界没有色彩，没有光影。<br>
+                但每一次奔跑、每一份陪伴、每一个微小的改变，<br>
+                都在让这个世界变得更加包容。
+            </p>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.29/dist/lenis.min.js"></script>
+
+    <script>
+        // ================= 第一部分：体验包逻辑 =================
+        function enterExperience() {
+            document.getElementById('screen-1').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('screen-1').style.display = 'none';
+                document.getElementById('screen-2').style.display = 'flex';
+                initChart();
+            }, 1000);
+        }
+        function backToFirst() { location.reload(); }
+        function enterScreen3() { document.getElementById('screen-2').style.display = 'none'; document.getElementById('screen-3').style.display = 'block'; initStage1(); }
+        function backToScreen2() { document.getElementById('screen-3').style.display = 'none'; document.getElementById('screen-2').style.display = 'flex'; }
+        function enterScreen4() { document.getElementById('screen-3').style.display = 'none'; document.getElementById('screen-4').style.display = 'block'; window.scrollTo(0,0); }
+        function backToScreen3() { document.getElementById('screen-4').style.display = 'none'; document.getElementById('screen-3').style.display = 'block'; }
+        function enterScreen5() { document.getElementById('screen-4').style.display = 'none'; document.getElementById('screen-5').style.display = 'block'; window.scrollTo(0,0); }
+        function backToScreen4() { document.getElementById('screen-5').style.display = 'none'; document.getElementById('screen-4').style.display = 'block'; }
+
+        const track = document.getElementById('track'), handle = document.getElementById('handle'), levelText = document.getElementById('levelText'), root = document.documentElement;
+        let isDragging = false;
+        function updateVision(percentage) {
+            percentage = Math.max(0, Math.min(100, percentage));
+            if (window.innerWidth > 768) { handle.style.top = percentage + '%'; handle.style.left = '50%'; } 
+            else { handle.style.left = percentage + '%'; handle.style.top = '50%'; }
+            if (percentage < 25) { 
+                root.style.setProperty('--blur', '4px'); root.style.setProperty('--brightness', '0.9'); root.style.setProperty('--contrast', '1'); root.style.setProperty('--overlay-opacity', '0'); levelText.innerText = '四级低视力'; levelText.style.color = '#555'; 
+            } else if (percentage < 50) { 
+                root.style.setProperty('--blur', '14px'); root.style.setProperty('--brightness', '1'); root.style.setProperty('--contrast', '1'); root.style.setProperty('--overlay-opacity', '0'); levelText.innerText = '三级低视力'; levelText.style.color = '#333'; 
+            } else if (percentage < 75) { 
+                root.style.setProperty('--blur', '6px'); root.style.setProperty('--brightness', '0.7'); root.style.setProperty('--contrast', '1'); root.style.setProperty('--overlay-opacity', '1'); root.style.setProperty('--tunnel-size', '15%'); levelText.innerText = '二级盲'; levelText.style.color = '#000'; 
+            } else { 
+                root.style.setProperty('--overlay-opacity', '1'); root.style.setProperty('--tunnel-size', '3%'); root.style.setProperty('--blur', '0px'); root.style.setProperty('--brightness', '0.2'); levelText.innerText = '一级盲'; levelText.style.color = '#000'; 
+            }
+        }
+        if(handle) {
+            handle.addEventListener('pointerdown', (e) => { isDragging = true; handle.setPointerCapture(e.pointerId); });
+            window.addEventListener('pointermove', (e) => { if (!isDragging) return; const rect = track.getBoundingClientRect(); updateVision(window.innerWidth > 768 ? ((e.clientY - rect.top) / rect.height) * 100 : ((e.clientX - rect.left) / rect.width) * 100); });
+            window.addEventListener('pointerup', () => { isDragging = false; });
+            track.addEventListener('pointerdown', (e) => { const rect = track.getBoundingClientRect(); updateVision(window.innerWidth > 768 ? ((e.clientY - rect.top) / rect.height) * 100 : ((e.clientX - rect.left) / rect.width) * 100); });
+            updateVision(0);
+        }
+
+        function getFigureSVG(type, colorClass, delay) {
+            let head = `<circle class="${colorClass}" cx="25" cy="12" r="8" />`;
+            let body = `<path class="${colorClass}" d="M 25 22 C 18 22, 15 30, 15 38 L 17 55 C 17 58, 22 58, 23 55 L 25 42 L 27 55 C 28 58, 33 58, 33 55 L 35 38 C 35 30, 32 22, 25 22 Z" />`;
+            let arms = `<path class="${colorClass}" d="M 15 30 Q 8 34 10 42 M 35 30 Q 42 34 40 42" fill="none" />`;
+            let cane = type === 'blind' ? `<line x1="40" y1="42" x2="55" y2="65" stroke="#e74c3c" stroke-width="3" stroke-linecap="round" />` : '';
+            return `<div class="figure" style="animation-delay: ${delay}s"><svg class="svg-figure" viewBox="0 0 60 68">${head}${body}${arms}${cane}</svg></div>`;
+        }
+        function initChart() {
+            const chartData = [
+                { id: 'col-4', count: 6, type: 'low', color: 'c4-light' },
+                { id: 'col-3', count: 5, type: 'low', color: 'c3-light' },
+                { id: 'col-2', count: 4, type: 'blind', color: 'c2-light' },
+                { id: 'col-1', count: 4, type: 'blind', color: 'c1-light' }
+            ];
+            chartData.forEach((item, index) => {
+                let html = '';
+                for (let i = 0; i < item.count; i++) html += getFigureSVG(item.type, item.color, index * 0.2 + i * 0.15);
+                document.getElementById(item.id).innerHTML = html;
+            });
+        }
+
+        let currentStage = 1;
+        const hintText = document.getElementById('hintText'), cane = document.getElementById('cane');
+        const scene1 = document.getElementById('scene1'), scene2 = document.getElementById('scene2'), scene3 = document.getElementById('scene3'), scene4 = document.getElementById('scene4');
+        function initStage1() {
+            currentStage = 1;
+            scene1.classList.add('active', 'zoomed'); scene2.classList.remove('active'); scene3.classList.remove('active'); scene4.classList.remove('active');
+            cane.classList.remove('active'); cane.style.pointerEvents = 'auto';
+            setTimeout(() => {
+                scene1.classList.remove('active'); scene2.classList.add('active');
+                setTimeout(() => { cane.classList.add('active'); hintText.innerText = '请拖动导盲棍触碰长条形盲道'; hintText.style.opacity = '1'; initCaneInteraction(); }, 800);
+            }, 1500);
+        }
+        let isCaneDragging = false, caneOffsetX = 0, caneOffsetY = 0, isQuestionTriggered = false;
+        const glassPanel = document.getElementById('glassPanel'), questionText = document.getElementById('questionText'), optionsContainer = document.getElementById('optionsContainer'), submitBtn = document.getElementById('submitBtn'), feedback = document.getElementById('feedback');
+        let selectedOptions = [];
+        function initCaneInteraction() {
+            cane.addEventListener('pointerdown', (e) => {
+                isCaneDragging = true; cane.setPointerCapture(e.pointerId);
+                const rect = cane.getBoundingClientRect(); caneOffsetX = e.clientX - rect.left; caneOffsetY = e.clientY - rect.top;
+                cane.style.transformOrigin = `${caneOffsetX}px ${caneOffsetY}px`;
+            });
+        }
+        window.addEventListener('pointermove', (e) => {
+            if (!isCaneDragging) return;
+            const x = e.clientX - caneOffsetX; const y = e.clientY - caneOffsetY;
+            cane.style.left = x + 'px'; cane.style.top = y + 'px'; cane.style.right = 'auto'; cane.style.bottom = 'auto';
+            const tipX = e.clientX - caneOffsetX + 20;
+            if (tipX > window.innerWidth * 0.3 && tipX < window.innerWidth * 0.7) {
+                if (!isQuestionTriggered) { isQuestionTriggered = true; isCaneDragging = false; cane.style.pointerEvents = 'none'; hintText.style.opacity = '0'; triggerQuestion(); }
+            }
+        });
+        window.addEventListener('pointerup', () => { isCaneDragging = false; });
+        function triggerQuestion() {
+            glassPanel.classList.add('active'); selectedOptions = []; optionsContainer.innerHTML = '';
+            if (currentStage === 1) {
+                questionText.innerText = '我该往哪走？';
+                const opts = [{val: 'A', icon: '⬆️'}, {val: 'B', icon: '🚫'}, {val: 'C', icon: '↪️'}];
+                opts.forEach(o => { let btn = document.createElement('div'); btn.className = 'option-btn'; btn.innerText = o.icon; btn.onclick = () => selectOption(o.val, btn); optionsContainer.appendChild(btn); });
+                submitBtn.classList.remove('active');
+            } else if (currentStage === 2) {
+                questionText.innerHTML = '接下来我该往哪走？<br><span style="font-size:16px; color:#E53935;">（答案有两个）</span>';
+                const opts = [{val: 'A', icon: '⬆️'}, {val: 'B', icon: '🚫'}, {val: 'C', icon: '↪️'}, {val: 'D', icon: '⛔️'}];
+                opts.forEach(o => { let btn = document.createElement('div'); btn.className = 'option-btn'; btn.innerText = o.icon; btn.onclick = () => selectOption(o.val, btn); optionsContainer.appendChild(btn); });
+                submitBtn.classList.add('active');
+            }
+        }
+        function selectOption(val, btn) {
+            if (currentStage === 1) { if (val === 'A') { showFeedback('👍', '#4CAF50'); setTimeout(() => { nextStage(); }, 1500); } else { showFeedback('再试一次', '#E53935', '30px'); } } 
+            else if (currentStage === 2) { if (selectedOptions.includes(val)) { selectedOptions = selectedOptions.filter(item => item !== val); btn.classList.remove('selected'); } else { selectedOptions.push(val); btn.classList.add('selected'); } }
+        }
+        function submitAnswer() {
+            const isCorrect = selectedOptions.includes('C') && selectedOptions.includes('D') && selectedOptions.length === 2;
+            if (isCorrect) { showFeedback('👍', '#4CAF50'); setTimeout(() => { nextStage(); }, 1500); }
+            else { showFeedback('再试一次', '#E53935', '30px'); selectedOptions = []; document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected')); }
+        }
+        function showFeedback(text, color, size = '60px') { feedback.innerText = text; feedback.style.color = color; feedback.style.fontSize = size; feedback.classList.remove('show'); void feedback.offsetWidth; feedback.classList.add('show'); }
+        function nextStage() {
+            feedback.classList.remove('show'); glassPanel.classList.remove('active');
+            if (currentStage === 1) {
+                currentStage = 2; scene2.classList.remove('active'); scene1.classList.add('active'); scene1.classList.remove('zoomed'); 
+                setTimeout(() => { scene1.classList.remove('active'); scene3.classList.add('active'); resetCanePosition(); hintText.innerText = '请拖动导盲棍触碰原点盲道'; hintText.style.opacity = '1'; }, 1000);
+            } else if (currentStage === 2) {
+                currentStage = 3; scene3.classList.remove('active'); scene4.classList.add('active'); cane.classList.remove('active'); hintText.style.opacity = '0';
+                setTimeout(() => { document.getElementById('obstacleLayer').style.display = 'block'; hintText.innerText = '盲道被占用了，请点击障碍物'; hintText.style.opacity = '1'; initObstacles(); }, 1000);
+            }
+        }
+        function resetCanePosition() { cane.style.left = 'auto'; cane.style.top = 'auto'; cane.style.right = '10%'; cane.style.bottom = '15%'; cane.style.transform = 'rotate(-35deg)'; cane.style.pointerEvents = 'auto'; isQuestionTriggered = false; cane.classList.add('active'); }
+        
+        const chartModal = document.getElementById('chartModal'); let chartTriggered = false;
+        function initObstacles() { chartTriggered = false; document.getElementById('stone').addEventListener('click', showChart); document.getElementById('scooter1').addEventListener('click', showChart); document.getElementById('scooter2').addEventListener('click', showChart); document.getElementById('box').addEventListener('click', showChart); }
+        function showChart() { if (chartTriggered) return; chartTriggered = true; chartModal.classList.add('active'); setTimeout(() => { document.querySelectorAll('.bar').forEach(b => b.style.width = b.getAttribute('data-w') + '%'); }, 100); }
+        function clearObstacles() { chartModal.classList.remove('active'); document.getElementById('obstacleLayer').style.display = 'none'; scene4.classList.remove('active'); scene1.classList.add('active'); scene1.classList.remove('zoomed'); setTimeout(() => { document.getElementById('winMessage').classList.add('show'); document.getElementById('toBrailleBtn').style.display = 'block'; hintText.style.opacity = '0'; }, 1000); }
+
+        // 盲文交互逻辑
+        const correctCells = [[1, 3, 4, 5],[2, 4],[1, 2, 5],[2, 3, 5]];
+        function startBrailleTest() {
+            document.getElementById('tryBtn').style.display = 'none'; document.getElementById('interactSection').style.display = 'block';
+            const container = document.getElementById('targetBraille'); container.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                let cell = document.createElement('div'); cell.className = 'braille-matrix';
+                let colLeft = document.createElement('div'); colLeft.className = 'braille-col';
+                for(let j = 1; j <= 3; j++) { let dot = document.createElement('div'); dot.className = 'dot'; dot.dataset.index = j; dot.dataset.cell = i; dot.onclick = () => handleDotClick(dot, i, j); colLeft.appendChild(dot); }
+                let colRight = document.createElement('div'); colRight.className = 'braille-col';
+                for(let j = 4; j <= 6; j++) { let dot = document.createElement('div'); dot.className = 'dot'; dot.dataset.index = j; dot.dataset.cell = i; dot.onclick = () => handleDotClick(dot, i, j); colRight.appendChild(dot); }
+                cell.appendChild(colLeft); cell.appendChild(colRight); container.appendChild(cell);
+            }
+        }
+        function handleDotClick(dot, cellIndex, dotIndex) {
+            if (dot.classList.contains('active')) return;
+            if (correctCells[cellIndex].includes(dotIndex)) { dot.classList.add('active'); checkBrailleComplete(); }
+            else { dot.style.backgroundColor = '#E74C3C'; setTimeout(() => { dot.style.backgroundColor = ''; }, 300); }
+        }
+        function checkBrailleComplete() {
+            let isComplete = true; const cells = document.getElementById('targetBraille').children;
+            for (let i = 0; i < 4; i++) {
+                let activeCount = 0; const cols = cells[i].children;
+                for (let col of cols) { const dots = col.children; for (let dot of dots) { if (dot.classList.contains('active')) activeCount++; } }
+                if (activeCount !== correctCells[i].length) { isComplete = false; break; }
+            }
+            if (isComplete) { showSuccess('successPopup', '你好！'); setTimeout(() => { document.getElementById('interactSection').style.display = 'none'; document.getElementById('subwayScene').style.display = 'block'; }, 2000); }
+        }
+        function showSuccess(id, text) { const popup = document.getElementById(id); popup.innerText = text; popup.classList.add('show'); setTimeout(() => { popup.classList.remove('show'); }, 2000); }
+        function showFixedScene() { document.getElementById('sceneP5').style.opacity = '0'; document.getElementById('sceneP6').style.opacity = '1'; document.getElementById('helpBtn').style.display = 'none'; document.getElementById('gotoGuideDogContainer').style.display = 'block'; }
+
+        // 导盲犬卡片交互逻辑
+        function handleCardClick(cardElement, event) {
+            event.stopPropagation();
+            if (cardElement.classList.contains('zoomed')) {
+                closeZoomedCard();
+                return;
+            }
+            const currentZoomed = document.querySelector('.flip-card.zoomed');
+            if (currentZoomed) currentZoomed.classList.remove('zoomed');
+            cardElement.classList.toggle('flipped');
+            cardElement.classList.add('zoomed');
+            document.getElementById('cardOverlay').classList.add('active');
+            if (cardElement.id === 'trainingCard' && cardElement.classList.contains('flipped')) {
+                triggerTrainingAnimation();
+            }
+        }
+        function closeZoomedCard() {
+            const zoomedCard = document.querySelector('.flip-card.zoomed');
+            if (zoomedCard) zoomedCard.classList.remove('zoomed');
+            document.getElementById('cardOverlay').classList.remove('active');
+        }
+        let trainingAnimated = false;
+        function triggerTrainingAnimation() {
+            if (trainingAnimated) return;
+            trainingAnimated = true;
+            const timeline = document.getElementById('trackTimeline');
+            const progress = document.getElementById('trackProgress');
+            const costCounter = document.getElementById('costCounter');
+            timeline.querySelectorAll('.paw').forEach(e => e.remove());
+            for (let i = 0; i < 10; i++) {
+                let paw = document.createElement('div');
+                paw.className = 'paw';
+                paw.innerText = '🐾';
+                let leftPos = 5 + (i * 90 / 9); 
+                paw.style.left = leftPos + '%';
+                if (i >= 3) {
+                    setTimeout(() => { paw.classList.add('eliminated'); }, 500 + (i * 200));
+                } else {
+                    setTimeout(() => { paw.classList.add('survived'); }, 2500); 
+                }
+                timeline.appendChild(paw);
+            }
+            setTimeout(() => { progress.style.width = '90%'; }, 100);
+            let currentCost = 0;
+            const targetCost = 200000;
+            const duration = 2000;
+            const steps = 60;
+            const stepTime = duration / steps;
+            const increment = targetCost / steps;
+            let timer = setInterval(() => {
+                currentCost += increment;
+                if (currentCost >= targetCost) { currentCost = targetCost; clearInterval(timer); }
+                costCounter.innerText = Math.floor(currentCost).toLocaleString() + ' 元';
+            }, stepTime);
+        }
+
+        // ================= 第二部分：展示包逻辑 =================
+        const sceneIntro2 = document.getElementById('scene');
+        const breathingRingIntro2 = document.getElementById('breathingRing');
+        const btnToTech = document.getElementById('btnToTech');
+        let introExpanded = false;
+
+        if (sceneIntro2) {
+            setTimeout(() => { breathingRingIntro2.style.opacity = '1'; }, 800);
+            sceneIntro2.addEventListener('click', () => {
+                if (!introExpanded) {
+                    introExpanded = true;
+                    breathingRingIntro2.style.opacity = '0';
+                    breathingRingIntro2.style.animation = 'none';
+                    sceneIntro2.classList.add('is-active');
+                    setTimeout(() => {
+                        if(btnToTech) btnToTech.style.display = 'block';
+                    }, 1500);
+                }
+            });
+        }
+
+        // 科技卡片交互
+        (function() {
+            const stage = document.getElementById('cardStage');
+            const cards = Array.from(document.querySelectorAll('#page-tech .card'));
+            const dots = Array.from(document.querySelectorAll('#page-tech .dot'));
+            const toast = document.getElementById('toast');
+            const swipeHint = document.getElementById('swipeHint');
+
+            if(!stage) return;
+
+            let currentIndex = 0;
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+            let hasSwiped = false;
+
+            const config = { scaleStep: 0.05, threshold: 100 };
+
+            function initCards() {
+                cards.forEach((card, i) => {
+                    card.style.transition = 'none';
+                    const relative = (i - currentIndex + 3) % 3;
+                    updateCardTransform(card, relative);
+                    card.style.zIndex = 3 - relative;
+                });
+                setTimeout(() => { cards.forEach(card => card.style.transition = ''); }, 50);
+            }
+
+            function updateCardTransform(card, relative, dragDeltaX = 0) {
+                if (relative === 0) {
+                    card.style.transform = `translateX(${dragDeltaX}px) rotate(${dragDeltaX * 0.03}deg)`;
+                    card.style.opacity = 1;
+                } else if (relative === 1) {
+                    const progress = Math.min(Math.abs(dragDeltaX) / config.threshold, 1);
+                    const scale = (1 - config.scaleStep) + (config.scaleStep * progress);
+                    card.style.transform = `scale(${scale})`;
+                    card.style.opacity = 0.8 + (0.2 * progress);
+                } else {
+                    card.style.transform = `scale(${1 - config.scaleStep * 2})`;
+                    card.style.opacity = 0.5;
+                }
+            }
+
+            function hideHint() { if (!hasSwiped) { hasSwiped = true; swipeHint.classList.add('hidden'); } }
+
+            function onDown(e) {
+                if (e.target.closest('button')) return;
+                isDragging = true; 
+                startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX; 
+                currentX = startX;
+                cards.forEach(card => card.style.transition = 'none');
+            }
+
+            function onMove(e) {
+                if (!isDragging) return;
+                currentX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+                const deltaX = currentX - startX;
+                if (e.cancelable) e.preventDefault();
+                cards.forEach((card, i) => {
+                    const relative = (i - currentIndex + 3) % 3;
+                    if (relative === 0) updateCardTransform(card, 0, deltaX);
+                    else if (relative === 1) updateCardTransform(card, 1, deltaX);
+                });
+            }
+
+            function onUp() {
+                if (!isDragging) return;
+                isDragging = false; 
+                const deltaX = currentX - startX;
+                cards.forEach(card => card.style.transition = '');
+                
+                if (Math.abs(deltaX) > config.threshold) { 
+                    swipeOut(deltaX > 0 ? 1 : -1); 
+                    hideHint(); 
+                } else {
+                    cards.forEach((card, i) => {
+                        const relative = (i - currentIndex + 3) % 3;
+                        updateCardTransform(card, relative, 0);
+                    });
+                }
+            }
+
+            function swipeOut(direction) {
+                const topCard = cards[currentIndex];
+                topCard.style.transform = `translateX(${direction * 100}vw) rotate(${direction * 20}deg)`;
+                topCard.style.opacity = 0;
+                currentIndex = (currentIndex - direction + 3) % 3;
+                dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
+                cards.forEach((card, i) => {
+                    if (card === topCard) return;
+                    const relative = (i - currentIndex + 3) % 3;
+                    updateCardTransform(card, relative, 0);
+                    card.style.zIndex = 3 - relative;
+                });
+                setTimeout(() => {
+                    topCard.style.transition = 'none';
+                    const relative = (cards.indexOf(topCard) - currentIndex + 3) % 3;
+                    updateCardTransform(topCard, relative, 0);
+                    topCard.style.zIndex = 3 - relative;
+                    setTimeout(() => { topCard.style.transition = ''; }, 50);
+                }, 400);
+            }
+
+            stage.addEventListener('touchstart', onDown, { passive: false });
+            stage.addEventListener('touchmove', onMove, { passive: false });
+            stage.addEventListener('touchend', onUp);
+            stage.addEventListener('touchcancel', onUp);
+            stage.addEventListener('mousedown', onDown);
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onUp);
+
+            document.querySelectorAll('#page-tech .card .btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const msg = this.dataset.feedback;
+                    if (!msg) return;
+                    toast.textContent = msg;
+                    toast.classList.add('show');
+                    clearTimeout(window._toastTimer);
+                    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+                });
+            });
+
+            initCards();
+        })();
+
+        // ================= 照片墙逻辑 =================
+        function enterGallery() {
+            document.getElementById('page-small').style.display = 'none';
+            const gallery = document.getElementById('page-gallery');
+            gallery.style.display = 'block';
+            gallery.scrollTop = 0;
+            
+            // 延迟 150ms 等浏览器渲染完成，获取到真实的 colWidth，再执行瀑布流初始化
+            setTimeout(() => {
+                if (!galleryInitialized) {
+                    initGallery();
+                }
+            }, 150);
+        }
+
+        function backToExperienceStart() {
+            document.getElementById('page-gallery').style.display = 'none';
+            document.getElementById('experience-section').style.display = 'block';
+            document.getElementById('screen-1').style.display = 'flex';
+            document.getElementById('screen-1').style.opacity = '1';
+            document.getElementById('screen-2').style.display = 'none';
+            document.getElementById('screen-3').style.display = 'none';
+            document.getElementById('screen-4').style.display = 'none';
+            document.getElementById('screen-5').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+
+        function backToSmallPage() {
+            document.getElementById('page-gallery').style.display = 'none';
+            document.getElementById('page-small').style.display = 'block';
+        }
+
+        let galleryInitialized = false;
+        
+        // 完全照搬原版的 initGallery 函数
+        function initGallery() {
+            if (galleryInitialized) return; 
+            galleryInitialized = true;
+            
+            // 与「最后一屏」保持一致：末尾保留 img-1 / img-2 作为垫底图，避免最后一列留白
+            const imageData = [
+                'img-1.jpg', 'img-2.jpg', 'img-3.jpg', 'img-4.jpg', 'img-5.jpg',
+                'img-6.jpg', 'img-7.jpg', 'img-8.jpg', 'img-9.jpg', 'img-10.jpg',
+                'img-11.jpg', 'img-12.jpg', 'img-13.jpg', 'img-14.jpg', 'img-15.jpg',
+                'img-16.jpg', 'img-17.jpg', 'img-18.jpg', 'img-19.jpg', 'img-20.jpg',
+                'img-21.jpg', 'img-22.jpg', 'img-23.jpg', 'img-24.jpg', 'img-25.jpg',
+                'img-26.jpg',
+                'img-1.jpg', 'img-2.jpg'
+            ];
+
+            // 注意：必须使用 gallery-col-*，否则会和第2屏统计图里的 col-1/col-2/col-3 重名，
+            // getElementById 会拿到隐藏的第2屏元素，照片墙就永远不显示。
+            const col1 = document.getElementById('gallery-col-1');
+            const col2 = document.getElementById('gallery-col-2');
+            const col3 = document.getElementById('gallery-col-3');
+            const cols = [col1, col2, col3];
+            const wrapper = document.getElementById('galleryWrapper');
+
+            // 如果这里依然获取到 0，说明外层 display 切换没有生效，加个兜底
+            const colWidth = col1.clientWidth || window.innerWidth * 0.3; 
+            let colHeights = [0, 0, 0]; 
+            let loadedCount = 0;
+
+            imageData.forEach((src) => {
+                const img = new Image();
+                img.src = src;
+                
+                img.onload = () => {
+                    const card = document.createElement('div');
+                    card.className = 'photo-card';
+                    card.setAttribute('data-observe', ''); 
+                    card.appendChild(img);
+
+                    const realHeight = (colWidth / img.naturalWidth) * img.naturalHeight;
+
+                    let minIdx = 0;
+                    if (colHeights[1] < colHeights[minIdx]) minIdx = 1;
+                    if (colHeights[2] < colHeights[minIdx]) minIdx = 2;
+
+                    cols[minIdx].appendChild(card);
+
+                    const gapSize = window.innerWidth <= 768 ? 12 : 24;
+                    colHeights[minIdx] += realHeight + gapSize;
+
+                    loadedCount++;
+                    if (loadedCount === imageData.length) {
+                        wrapper.style.opacity = '1';
+                        initObserver();
+                    }
+                };
+
+                img.onerror = () => {
+                    // 原版逻辑：加载失败也算排布（但这会导致没有卡片和高度插入，从而页面塌陷看不见）
+                    // 为了让你能看到照片墙框架，这里加了一个最小高度占位，但不影响原逻辑展示
+                    const card = document.createElement('div');
+                    card.className = 'photo-card';
+                    card.setAttribute('data-observe', ''); 
+                    card.style.height = '200px'; 
+                    card.style.backgroundColor = '#eee';
+                    card.style.display = 'flex';
+                    card.style.alignItems = 'center';
+                    card.style.justifyContent = 'center';
+                    card.style.color = '#999';
+                    card.innerText = '图片缺失: ' + src;
+
+                    let minIdx = 0;
+                    if (colHeights[1] < colHeights[minIdx]) minIdx = 1;
+                    if (colHeights[2] < colHeights[minIdx]) minIdx = 2;
+                    
+                    cols[minIdx].appendChild(card);
+                    colHeights[minIdx] += 224;
+
+                    loadedCount++;
+                    if (loadedCount === imageData.length) {
+                        wrapper.style.opacity = '1';
+                        initObserver();
+                    }
+                };
+            });
+
+            function initObserver() {
+                const observerOptions = {
+                    root: null,
+                    rootMargin: '0px 0px -10% 0px', 
+                    threshold: 0
+                };
+
+                const observer = new IntersectionObserver((entries, obs) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('reveal');
+                            obs.unobserve(entry.target);
+                        }
+                    });
+                }, observerOptions);
+
+                document.querySelectorAll('#page-gallery [data-observe]').forEach(el => {
+                    observer.observe(el);
+                });
+            }
+            // 说明：照片墙自身就是滚动容器（overflow-y:auto），不能再把 Lenis 的 wrapper
+            // 指向它，否则 Lenis 会不断把 scrollTop 拉回 0，导致照片墙看起来「不动」。
+            // 这里直接使用原生滚动 + CSS scroll-behavior: smooth。
+        }
+    </script>
+
+</body></html>
